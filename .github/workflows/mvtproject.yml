@@ -1,0 +1,47 @@
+name: Build and Push mvt-project/mvt to burso/mvt
+
+on:
+  push:
+    branches:
+      - main  # Change to your default branch if not main
+  pull_request:
+    branches:
+      - main  # Change to your default branch if not main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Clone MVT repository
+        run: git clone https://github.com/mvt-project/mvt.git
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and push MVT Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./mvt  # Dockerfile should be in the root of this repo or modify the context accordingly
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest
+
+      - name: Logout from Docker Hub
+        run: docker logout
