@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push rapid7/metasploit-framework to burso/metasploit-framework
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
         with:
           context: ./metasploit-framework  # Dockerfile should be in the root of this repo or modify the context accordingly
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/dockerbuilder:latest  # Change the tag as needed
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:latest  # Change the tag as needed
 
       - name: Logout from Docker Hub
         run: docker logout
