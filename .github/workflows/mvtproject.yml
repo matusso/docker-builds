@@ -19,6 +19,32 @@ jobs:
       - name: Clone MVT repository
         run: git clone https://github.com/mvt-project/mvt.git
 
+      - name: Clone libimobiledevice/libtatsu repository
+        run: git clone https://github.com/libimobiledevice/libtatsu.git
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Specify the Python version you need
+
+      - name: Install MVT dependencies
+        run: |
+          cd mvt
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Install build dependencies for libtatsu
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake libtool pkg-config libplist-dev libusbmuxd-dev libimobiledevice-dev libzip-dev
+
+      - name: Build libtatsu
+        run: |
+          cd libtatsu
+          ./autogen.sh
+          make
+          sudo make install
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
