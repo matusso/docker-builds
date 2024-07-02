@@ -27,16 +27,10 @@ jobs:
         with:
           python-version: '3.9'  # Specify the Python version you need
 
-      - name: Install MVT dependencies
-        run: |
-          cd mvt
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
       - name: Install build dependencies for libtatsu
         run: |
           sudo apt-get update
-          sudo apt-get install -y autoconf automake libtool pkg-config libplist-dev libusbmuxd-dev libimobiledevice-dev libzip-dev
+          sudo apt-get install -y autoconf automake libtool pkg-config libplist-dev libusbmuxd-dev libimobiledevice-dev libzip-dev build-essential pkg-config checkinstall git autoconf automake libtool-bin libplist-dev libcurl4-openssl-dev
 
       - name: Build libtatsu
         run: |
