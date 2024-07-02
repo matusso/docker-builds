@@ -31,17 +31,17 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y autoconf automake libtool pkg-config libplist-dev libusbmuxd-dev libimobiledevice-dev libzip-dev build-essential pkg-config checkinstall git autoconf automake libtool-bin libplist-dev libcurl4-openssl-dev
-
-      - name: Build libtatsu
-        run: |
-          cd libtatsu
-          ./autogen.sh
-          make
-          sudo make install
-
+      
       - name: Build libplist
         run: |
           cd libplist
+          ./autogen.sh
+          make
+          sudo make install
+  
+      - name: Build libtatsu
+        run: |
+          cd libtatsu
           ./autogen.sh
           make
           sudo make install
