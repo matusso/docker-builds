@@ -1,4 +1,4 @@
-name: Build and Push rapid7/metasploit-framework to burso/metasploit-framework
+name: Build and Push r0oth3x49/ghauri to burso/ghauri
 
 on:
   push:
@@ -17,10 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Clone Metasploit Framework repository
-        run: git clone https://github.com/rapid7/metasploit-framework.git
+        uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -42,9 +39,10 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./metasploit-framework  # Dockerfile should be in the root of this repo or modify the context accordingly
+          context: files/ghauri  
+          file: files/ghauri/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:latest  # Change the tag as needed
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:latest  # Change the tag as needed
 
       - name: Logout from Docker Hub
         run: docker logout
