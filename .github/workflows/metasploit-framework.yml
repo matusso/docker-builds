@@ -10,15 +10,10 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        platform:
-          - linux/amd64
-          - linux/arm/v6
-          - linux/arm/v7
-          - linux/arm64
+        platform: [linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64]
 
     steps:
       - name: Checkout repository
@@ -47,7 +42,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./metasploit-framework  # Dockerfile should be in the root of this repo or modify the context accordingly
+          context: ./metasploit-framework  # Dockerfile should be in the root of the cloned repo
+          platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:latest  # Change the tag as needed
 
