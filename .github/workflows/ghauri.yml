@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
+        platform: [linux/amd64, linux/arm64]
 
     steps:
       - name: Checkout repository
@@ -41,6 +42,7 @@ jobs:
         with:
           context: files/ghauri  
           file: files/ghauri/Dockerfile
+          platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:latest  # Change the tag as needed
 
