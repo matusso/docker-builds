@@ -45,14 +45,10 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./metasploit-framework  # Dockerfile should be in the root of the cloned repo
-          platforms: ${{ matrix.platform }}
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:${{ env.RELEASE_VERSION }}
-            ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:latest
+        run: |
+          docker buildx build --push \
+            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
+            --platform ${{ matrix.platform }} ./metasploit-framework
 
       - name: Logout from Docker Hub
         run: docker logout
