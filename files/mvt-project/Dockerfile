@@ -2,10 +2,7 @@
 FROM python:3.12
 
 # Set the working directory in the container
-WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-COPY . /app
+WORKDIR /
 
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
