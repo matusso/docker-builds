@@ -14,22 +14,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        platform:
-          - linux/amd64
-          - linux/arm64
 
-    steps:
-      - name: Prepare
-        run: |
-          platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
-        
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-
+    steps:        
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -55,15 +41,10 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: files/ghauri  
-          file: files/ghauri/Dockerfile
-          platforms: ${{ matrix.platform }}
-          labels: ${{ steps.meta.outputs.labels }}
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:${{ env.RELEASE_VERSION }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
-
+        run: |
+          docker buildx build --push \
+            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:${{ env.RELEASE_VERSION }} \
+              --platform linux/amd64,linux/arm64 ./files/ghauri
+      
       - name: Logout from Docker Hub
         run: docker logout
