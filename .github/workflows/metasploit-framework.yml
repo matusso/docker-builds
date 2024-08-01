@@ -10,7 +10,10 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
 
     steps:
       - name: Checkout repository
@@ -18,7 +21,7 @@ jobs:
 
       - name: Set release version
         id: set_version
-        run: echo "RELEASE_VERSION=6.4.19" >> $GITHUB_ENV  # Replace with the desired version
+        run: echo "RELEASE_VERSION=6.4.19" >> $GITHUB_ENV
 
       - name: Clone Metasploit Framework repository at specific version
         run: |
