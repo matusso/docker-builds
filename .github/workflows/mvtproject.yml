@@ -10,44 +10,21 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set release version
+        id: set_version
+        run: echo "RELEASE_VERSION=v2.5.4" >> $GITHUB_ENV
+
       - name: Clone MVT repository
-        run: git clone https://github.com/mvt-project/mvt.git
-
-      - name: Clone libimobiledevice/libtatsu repository
-        run: git clone https://github.com/libimobiledevice/libtatsu.git
-
-      - name: Clone libimobiledevice/libplist repository
-        run: git clone https://github.com/libimobiledevice/libplist.git
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'  # Specify the Python version you need
-
-      - name: Install build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y autoconf automake libtool pkg-config libplist-dev libusbmuxd-dev libimobiledevice-dev libzip-dev build-essential pkg-config checkinstall git autoconf automake libtool-bin libplist-dev libcurl4-openssl-dev
-      
-      - name: Build libplist
-        run: |
-          cd libplist
-          ./autogen.sh
-          make
-          sudo make install
-  
-      - name: Build libtatsu
-        run: |
-          cd libtatsu
-          ./autogen.sh
-          make
-          sudo make install
+        run: git clone --branch ${{ env.RELEASE_VERSION }} https://github.com/mvt-project/mvt.git
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -56,7 +33,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Cache Docker layers
         uses: actions/cache@v2
@@ -66,12 +43,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build and push MVT Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./mvt  # Dockerfile should be in the root of this repo or modify the context accordingly
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest
+      - name: Build and push Docker image
+        run: |
+          docker buildx build --push \
+            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:${{ env.RELEASE_VERSION }} \
+            --platform linux/amd64,linux/arm64 ./mvt
 
       - name: Logout from Docker Hub
         run: docker logout
