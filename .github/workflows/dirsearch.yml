@@ -21,7 +21,7 @@ jobs:
 
       - name: Set release version
         id: set_version
-        run: echo "RELEASE_VERSION=0.4.3" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=v0.4.3" >> $GITHUB_ENV
 
       - name: Clone Dirsearch repository at specific version
         run: |
