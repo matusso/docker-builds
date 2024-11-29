@@ -49,7 +49,7 @@ jobs:
       - name: Logout from Docker Hub
         run: docker logout
 
-      - name: Check burso/mvt-project image
+      - name: Check ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest image
         uses: snyk/actions/docker@master
         continue-on-error: true
         env:

@@ -8,6 +8,10 @@ on:
     branches:
       - main  # Change to your default branch if not main
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   build-and-push:
     runs-on: ${{ matrix.os }}
@@ -24,7 +28,7 @@ jobs:
         run: echo "RELEASE_VERSION=1.4.1" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -33,9 +37,9 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
+          path: ${{ github.workspace }}/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
@@ -43,23 +47,28 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker buildx build --push \
-            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:${{ env.RELEASE_VERSION }} \
-            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:latest \
+            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:${{ env.RELEASE_VERSION }}
             --platform linux/amd64,linux/arm64 ./files/ghauri
       
       - name: Logout from Docker Hub
         run: docker logout
 
-      - name: Check burso/ghauri image
+      - name: Check ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:${{ env.RELEASE_VERSION }} image
         uses: snyk/actions/docker@master
-        with:
-            image: burso/ghauri
         continue-on-error: true
         env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      - name: Upload result to GitHub Code Scanning
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ secrets.DOCKER_HUB_USERNAME }}/ghauri:${{ env.RELEASE_VERSION }}
+          args: --file=./files/ghauri/Dockerfile
+          json: true
+      - uses: garethr/snyk-to-sarif@master
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SARIF
+          path: snyk.sarif
+      
+      - name: Upload SARIF Report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
-            sarif_file: snyk.sarif
-    
+          sarif_file: snyk.sarif
