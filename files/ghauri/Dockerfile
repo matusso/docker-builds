@@ -8,9 +8,10 @@ FROM python:3.12
 WORKDIR /app
 
 # Clone the Ghauri repository
-RUN git clone --branch 1.3.5 https://github.com/r0oth3x49/ghauri.git .
+RUN git clone --branch 1.4.1 https://github.com/r0oth3x49/ghauri.git .
 
 # Install any needed packages specified in requirements.txt
+RUN pip install setuptools
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # install
