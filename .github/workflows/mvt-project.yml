@@ -50,29 +50,20 @@ jobs:
         run: docker logout
 
       - name: Check burso/mvt-project image
-        run: |
-          mkdir -p sarif-reports
-          snyk container test --sarif-file-output="sarif-reports/snyk.sarif" ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest
-        continue-on-error: true
+        uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      - name: Verify SARIF File Existence
-        id: verify_sarif
-        run: |
-            if [ -f sarif-reports/snyk.sarif ]; then
-              echo "exists=true" >> $GITHUB_ENV
-            else
-              echo "exists=false" >> $GITHUB_ENV
-            fi
-
-      - name: Replace security-severity undefined for license-related findings
-        if: env.exists == 'true'
-        run: |
-          sed -i 's/"security-severity": "undefined"/"security-severity": "0"/g' sarif-reports/snyk.sarif
-  
+        with:
+          image: ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest
+          args: --file=./files/mvt-project/Dockerfile
+          json: true
+      - uses: garethr/snyk-to-sarif@master
+      - uses: actions/upload-artifact@v2
+        with:
+          name: SARIF
+          path: snyk.sarif
+      
       - name: Upload SARIF Report to GitHub Code Scanning
-        if: env.exists == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sarif-reports/snyk.sarif
