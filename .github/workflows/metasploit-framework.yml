@@ -16,8 +16,8 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: snyk/actions/setup@master
 
       - name: Set release version
         id: set_version
@@ -48,7 +48,23 @@ jobs:
         run: |
           docker buildx build --push \
             --tag ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
+            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/metasploit-framework:latest
             --platform linux/amd64,linux/arm64 ./metasploit-framework
 
       - name: Logout from Docker Hub
         run: docker logout
+      
+      - name: Check burso/metasploit-framework image
+        uses: snyk/actions/docker@master
+        with:
+            image: burso/metasploit-framework
+        continue-on-error: true
+        env:
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+            
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+            sarif_file: snyk.sarif
+    
+          
