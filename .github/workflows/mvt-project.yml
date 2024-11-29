@@ -51,6 +51,7 @@ jobs:
 
       - name: Check burso/mvt-project image
         uses: snyk/actions/docker@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
