@@ -21,7 +21,7 @@ jobs:
 
       - name: Set release version
         id: set_version
-        run: echo "RELEASE_VERSION=6.4.32" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=6.4.38" >> $GITHUB_ENV
 
       - name: Clone Metasploit Framework repository at specific version
         run: |
