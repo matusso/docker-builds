@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.13
+FROM python:3.13-alpine
 
 # Install git
 #RUN apt update && apt install -y git 
