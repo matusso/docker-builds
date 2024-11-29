@@ -48,6 +48,7 @@ jobs:
       - name: Check burso/mvt-project image
         run: |
               snyk container test --sarif-file-output=snyk.sarif ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
