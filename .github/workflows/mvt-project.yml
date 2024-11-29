@@ -46,12 +46,8 @@ jobs:
         run: docker logout
 
       - name: Check burso/mvt-project image
-        uses: snyk/actions/docker@master
-        with:
-            image: burso/mvt-project
-        continue-on-error: true
-        env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+              snyk container test --sarif-file-output=snyk.sarif ${{ secrets.DOCKER_HUB_USERNAME }}/mvt:latest
     
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
