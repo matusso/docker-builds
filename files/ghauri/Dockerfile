@@ -2,7 +2,7 @@
 FROM python:3.13-alpine
 
 # Install git
-#RUN apt update && apt install -y git 
+RUN apk update && apk add --no-cache git
 
 # Set the working directory in the container
 WORKDIR /app
