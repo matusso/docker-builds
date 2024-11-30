@@ -6,7 +6,7 @@ ENV KR_VERSION="v1.0.2" \
     KR_DIR="/usr/local/kiterunner"
 
 # Install dependencies
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
     bash \
     build-base \
     git \
