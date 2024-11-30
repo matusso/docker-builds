@@ -2,7 +2,7 @@
 
 ## Security Tools Docker Images
 
-This repository automates the process of building and publishing Docker images for various popular security tools. The images are hosted on [Docker Hub](https://hub.docker.com/u/burso).
+This repository automates the process of building and publishing Docker images for various popular security tools.
 
 ## About
 
