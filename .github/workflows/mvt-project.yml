@@ -1,4 +1,4 @@
-name: Build and Push mvt-project/mvt to ghcr.io/matusso/mvt
+name: mvt-project/mvt
 
 on:
   push:

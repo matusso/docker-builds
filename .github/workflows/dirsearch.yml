@@ -1,4 +1,4 @@
-name: Build and Push maurosoria/dirsearch to ghcr.io/matusso/dirsearch
+name: maurosoria/dirsearch
 
 on:
   push:

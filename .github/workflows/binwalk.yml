@@ -1,4 +1,4 @@
-name: Build and Push ReFirmLabs/binwalk to ghcr.io/matusso/binwalk
+name: ReFirmLabs/binwalk
 
 on:
   push:

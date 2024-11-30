@@ -1,4 +1,4 @@
-name: Build and Push assetnote/kiterunner to ghcr.io/matusso/kiterunner
+name: assetnote/kiterunner
 
 on:
   push:
