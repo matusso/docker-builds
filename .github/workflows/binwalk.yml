@@ -1,4 +1,4 @@
-name: Build and Push ReFirmLabs/binwalk to burso/binwalk
+name: Build and Push ReFirmLabs/binwalk to ghcr.io/<OWNER>/binwalk
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  packages: write  # Required for GitHub Container Registry
   security-events: write
 
 jobs:
@@ -31,11 +32,12 @@ jobs:
         run: |
           git clone --branch ${{ env.RELEASE_VERSION }} https://github.com/ReFirmLabs/binwalk.git
 
-      - name: Log in to Docker Hub
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -48,22 +50,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image to GitHub Container Registry
         run: |
           docker buildx build --push \
-            --tag ${{ secrets.DOCKER_HUB_USERNAME }}/binwalk:${{ env.RELEASE_VERSION }} \
+            --tag ghcr.io/${{ github.repository_owner }}/binwalk:${{ env.RELEASE_VERSION }} \
             --platform linux/amd64,linux/arm64 ./binwalk
 
-      - name: Logout from Docker Hub
-        run: docker logout
+      - name: Logout from GitHub Container Registry
+        run: docker logout ghcr.io
 
-      - name: Check ${{ secrets.DOCKER_HUB_USERNAME }}/binwalk:${{ env.RELEASE_VERSION }} image
+      - name: Check ghcr.io/${{ github.repository_owner }}/binwalk:${{ env.RELEASE_VERSION }} image
         uses: snyk/actions/docker@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: ${{ secrets.DOCKER_HUB_USERNAME }}/binwalk:${{ env.RELEASE_VERSION }}
+          image: ghcr.io/${{ github.repository_owner }}/binwalk:${{ env.RELEASE_VERSION }}
           args: --file=./binwalk/Dockerfile
           json: true
       - uses: garethr/snyk-to-sarif@master
