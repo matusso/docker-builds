@@ -1,4 +1,4 @@
-name: Build and Push rapid7/metasploit-framework to burso/metasploit-framework
+name: Build and Push rapid7/metasploit-framework to ghcr.io/matusso/metasploit-framework
 
 on:
   push:

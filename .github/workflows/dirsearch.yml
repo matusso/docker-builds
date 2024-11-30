@@ -1,4 +1,4 @@
-name: Build and Push maurosoria/dirsearch to burso/dirsearch
+name: Build and Push maurosoria/dirsearch to ghcr.io/matusso/dirsearch
 
 on:
   push:

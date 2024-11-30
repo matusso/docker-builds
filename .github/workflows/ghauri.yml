@@ -1,4 +1,4 @@
-name: Build and Push r0oth3x49/ghauri to burso/ghauri
+name: Build and Push r0oth3x49/ghauri to ghcr.io/matusso/ghauri
 
 on:
   push:

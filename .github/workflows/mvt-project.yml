@@ -1,4 +1,4 @@
-name: Build and Push mvt-project/mvt to burso/mvt
+name: Build and Push mvt-project/mvt to ghcr.io/matusso/mvt
 
 on:
   push:

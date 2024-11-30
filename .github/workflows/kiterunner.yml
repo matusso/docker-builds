@@ -1,4 +1,4 @@
-name: Build and Push ReFirmLabs/binwalk to ghcr.io/matusso/binwalk
+name: Build and Push assetnote/kiterunner to ghcr.io/matusso/kiterunner
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: read
-  packages: write  # Required for GitHub Container Registry
+  packages: write
   security-events: write
 
 jobs:
@@ -20,17 +20,13 @@ jobs:
       matrix:
         os: [ubuntu-latest]
 
-    steps:
+    steps:        
       - uses: actions/checkout@v3
       - uses: snyk/actions/setup@master
 
       - name: Set release version
         id: set_version
-        run: echo "RELEASE_VERSION=v3.1.0" >> $GITHUB_ENV
-
-      - name: Clone binwalk:${{ env.RELEASE_VERSION }}
-        run: |
-          git clone --branch ${{ env.RELEASE_VERSION }} https://github.com/ReFirmLabs/binwalk.git
+        run: echo "RELEASE_VERSION=1.0.2" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -50,23 +46,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build and push Docker image to GitHub Container Registry
+      - name: Build and push Docker image
         run: |
           docker buildx build --push \
-            --tag ghcr.io/${{ github.repository_owner }}/binwalk:${{ env.RELEASE_VERSION }} \
-            --platform linux/amd64,linux/arm64 ./binwalk
+            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }} \
+            --platform linux/amd64,linux/arm64 ./files/kiterunner
+      
+      - name: Logout from Docker Hub
+        run: docker logout
 
-      - name: Logout from GitHub Container Registry
-        run: docker logout ghcr.io
-
-      - name: Check ghcr.io/${{ github.repository_owner }}/binwalk:${{ env.RELEASE_VERSION }} image
+      - name: Check ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }} image
         uses: snyk/actions/docker@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: ghcr.io/${{ github.repository_owner }}/binwalk:${{ env.RELEASE_VERSION }}
-          args: --file=./binwalk/Dockerfile
+          image: ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }}
+          args: --file=./files/kiterunner/Dockerfile
           json: true
       - uses: garethr/snyk-to-sarif@master
       - uses: actions/upload-artifact@v4
