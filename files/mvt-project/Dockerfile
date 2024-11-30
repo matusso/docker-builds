@@ -1,19 +1,23 @@
-# Use an official Python runtime as a parent image
-FROM python:3.13
+# Use an official Python runtime for Alpine as the base image
+FROM python:3.13-alpine
 
 # Set the working directory in the container
 WORKDIR /
 
-# Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmagic1 \
-    libusb-1.0-0 \
-    libbz2-dev \
-    libzstd-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Install necessary Alpine packages and dependencies
+RUN apk add --no-cache \
+    libmagic \
+    libusb \
+    bzip2-dev \
+    zstd-dev \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev
 
 # Install mvt via pip
 RUN pip install --no-cache-dir mvt
 
 # Run a shell by default (for testing and usage)
-CMD ["bash"]
+CMD ["sh"]
