@@ -39,6 +39,10 @@ The following security tools are included in this repository:
    - Kiterunner is a tool that is capable of not only performing traditional content discovery at lightning fast speeds, but also bruteforcing routes/endpoints in modern applications..  
    - [![ghcr.io/matusso/kiterunner](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml)
 
+7. **[wafw00f](https://github.com/EnableSecurity/wafw00f)**  
+   - WAFW00F can detect a number of firewalls  
+   - [![ghcr.io/matusso/wafw00f](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml)
+
 ## Multi-Architecture Support
 
 All Docker images are built and published for the following architectures:
