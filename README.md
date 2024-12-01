@@ -43,6 +43,10 @@ The following security tools are included in this repository:
    - WAFW00F can detect a number of firewalls  
    - [![ghcr.io/matusso/wafw00f](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml)
 
+8. **[routersploit](https://github.com/threat9/routersploit)**  
+   - The RouterSploit Framework is an open-source exploitation framework dedicated to embedded devices.  
+   - [![ghcr.io/matusso/routersploit](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml)
+
 ## Multi-Architecture Support
 
 All Docker images are built and published for the following architectures:
