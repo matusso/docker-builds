@@ -1,0 +1,18 @@
+# Use an official Python runtime as a parent image
+FROM python:3.13-alpine
+
+# Install git
+RUN apk update && apk add --no-cache git
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Clone the Ghauri repository
+RUN git clone --branch master https://github.com/r0oth3x49/ghauri.git .
+
+# Install any needed packages specified in requirements.txt
+RUN pip install setuptools
+
+RUN python setup.py install
+
+ENTRYPOINT [ "wafw00f" ]
