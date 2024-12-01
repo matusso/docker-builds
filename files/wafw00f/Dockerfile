@@ -8,7 +8,7 @@ RUN apk update && apk add --no-cache git
 WORKDIR /app
 
 # Clone the Ghauri repository
-RUN git clone --branch master https://github.com/r0oth3x49/ghauri.git .
+RUN git clone --branch master https://github.com/EnableSecurity/wafw00f .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install setuptools
