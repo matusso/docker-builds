@@ -1,20 +1,20 @@
 # Use an official Python runtime as a parent image
 FROM python:3.13-alpine
 
-# Install git
-RUN apk update && apk add --no-cache git
+# Update
+RUN apk update
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Clone the Ghauri repository
-RUN git clone --branch v3.4.6 https://github.com/threat9/routersploit .
+# Copy the RouterSploit source code from the submodule
+COPY src/routersploit /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install setuptools telnetlib-313-and-up
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-# install
+# Build and install the package
 RUN python /app/setup.py build
 RUN python /app/setup.py install
 
