@@ -62,7 +62,7 @@ jobs:
           docker buildx build --push \
             --tag ghcr.io/${{ github.repository_owner }}/routersploit:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/routersploit:latest \
-            --platform linux/amd64,linux/arm64 ./files/routersploit
+            --platform linux/amd64,linux/arm64 -f ./files/routersploit/Dockerfile .
 
       # Logout from Docker Hub
       - name: Logout from Docker Hub

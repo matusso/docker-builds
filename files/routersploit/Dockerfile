@@ -1,14 +1,14 @@
 # Use an official Python runtime as a parent image
 FROM python:3.13-alpine
 
-# Update
-RUN apk update
-
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy the RouterSploit source code from the submodule
-COPY src/routersploit /app
+COPY --link src/routersploit/ /app
+
+# Update
+RUN apk update
 
 # Install any needed packages specified in requirements.txt
 RUN pip install setuptools telnetlib-313-and-up
