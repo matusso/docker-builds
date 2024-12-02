@@ -123,7 +123,7 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r src/routersploit/requirements.txt
 
       # Run SonarCloud analysis
       - name: Run SonarCloud Scan
@@ -132,7 +132,7 @@ jobs:
           projectBaseDir: src/routersploit
           args: >
             -Dsonar.organization=matusso
-            -Dsonar.projectKey=matusso_docker-builds/routersploit
+            -Dsonar.projectKey=matusso_docker-builds
             -Dsonar.verbose=true
             -Dsonar.python.version=3.13
         env:
