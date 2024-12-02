@@ -1,3 +1,6 @@
 [submodule "src/routersploit"]
 	path = src/routersploit
 	url = https://github.com/threat9/routersploit.git
+[submodule "src/metasploit-framework"]
+	path = src/metasploit-framework
+	url = https://github.com/rapid7/metasploit-framework.git
