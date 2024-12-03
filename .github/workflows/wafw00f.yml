@@ -108,7 +108,7 @@ jobs:
       # Install dependencies
     - name: Install dependencies
       run: |
-        pip install -r src/wafw00f/requirements.txt
+        pip install setuptools
         
       # Run SonarCloud analysis
     - name: Run SonarCloud Scan
