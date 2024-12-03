@@ -1,6 +1,0 @@
-[submodule "src/routersploit"]
-	path = src/routersploit
-	url = https://github.com/threat9/routersploit.git
-[submodule "src/wafw00f"]
-	path = src/wafw00f
-	url = https://github.com/EnableSecurity/wafw00f

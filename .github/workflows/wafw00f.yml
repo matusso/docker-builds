@@ -22,9 +22,6 @@ jobs:
 
     steps:        
       - uses: actions/checkout@v3
-        with:
-          submodules: true  # Ensure submodules are checked out
-
       - uses: snyk/actions/setup@master
 
       - name: Set release version
@@ -54,7 +51,7 @@ jobs:
           docker buildx build --push \
             --tag ghcr.io/${{ github.repository_owner }}/wafw00f:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/wafw00f:latest \
-            --platform linux/amd64,linux/arm64 -f ./files/wafw00f/Dockerfile .
+            --platform linux/amd64,linux/arm64 ./files/wafw00f
       
       - name: Logout from Docker Hub
         run: docker logout
@@ -78,47 +75,3 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
-
-  sonarcloud:
-    runs-on: ubuntu-latest
-    needs: build-and-push  # Ensure this job runs after the build-and-push job
-        
-    steps:
-    # Checkout the repository
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        submodules: true  # Ensure submodules are checked out
-        
-              # Set up Python
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.13
-        
-              # Cache Python dependencies
-    - name: Cache Python packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-        
-      # Install dependencies
-    - name: Install dependencies
-      run: |
-        pip install setuptools
-        
-      # Run SonarCloud analysis
-    - name: Run SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@v3.1.0
-      with:
-        projectBaseDir: src/wafw00f
-        args: >
-          -Dsonar.organization=matusso
-          -Dsonar.projectKey=matusso_docker-builds
-          -Dsonar.verbose=true
-          -Dsonar.python.version=3.13
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
