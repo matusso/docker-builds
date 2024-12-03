@@ -50,3 +50,6 @@ jobs:
             -Dsonar.languages=ruby
             -Dsonar.sources=metasploit-framework
             -Dsonar.exclusions=**/*.java,**/*.c,**/*.cpp,**/*.h,**/*.mm,**/*.m
+            -Dsonar.c.file.suffixes=-
+            -Dsonar.cpp.file.suffixes=-
+            -Dsonar.objc.file.suffixes=-
