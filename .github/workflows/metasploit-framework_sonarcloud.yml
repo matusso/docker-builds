@@ -3,7 +3,7 @@ name: SonarCloud Scan - Metasploit Framework
 on:
   push:
     branches:
-      - main
+      - sonarcloud-integration
   pull_request:
     types: [opened, synchronize, reopened]
 

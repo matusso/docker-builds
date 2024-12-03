@@ -3,7 +3,7 @@ name: SonarCloud Scan - RouterSploit
 on:
   push:
     branches:
-      - main
+      - sonarcloud-integration
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -44,3 +44,5 @@ jobs:
             -Dsonar.projectKey=matusso_docker-builds
             -Dsonar.verbose=true
             -Dsonar.python.version=3.13
+            -Dsonar.projectName=routersploit
+            -Dsonar.sources=routersploit
