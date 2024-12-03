@@ -19,6 +19,7 @@ jobs:
         with:
           repository: threat9/routersploit
           path: routersploit  # Optional: Clone into a specific directory
+          ref: 'v3.4.6'
 
       # Set up Python 3.13
       - name: Set up Python

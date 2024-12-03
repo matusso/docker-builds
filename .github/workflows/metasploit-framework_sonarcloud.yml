@@ -18,7 +18,8 @@ jobs:
         with:
           repository: rapid7/metasploit-framework
           path: metasploit-framework  # Optional: Clone into a specific directory
-
+          ref: '6.4.38'
+      
       # Set up Ruby environment
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
