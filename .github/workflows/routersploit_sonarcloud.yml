@@ -1,0 +1,46 @@
+name: SonarCloud Scan - RouterSploit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud-routersploit:
+    name: Scan RouterSploit
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the RouterSploit repository
+      - name: Checkout RouterSploit Repository
+        uses: actions/checkout@v4
+        with:
+          repository: threat9/routersploit
+          path: routersploit  # Optional: Clone into a specific directory
+
+      # Set up Python 3.13
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      # Install Python dependencies
+      - name: Install Python dependencies
+        run: |
+          cd routersploit
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # SonarCloud Scan for RouterSploit
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=matusso
+            -Dsonar.projectKey=matusso_docker-builds
+            -Dsonar.verbose=true
+            -Dsonar.python.version=3.13

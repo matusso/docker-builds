@@ -1,0 +1,47 @@
+name: SonarCloud Scan - Metasploit Framework
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud-metasploit:
+    name: Scan Metasploit Framework
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Metasploit Framework Repository
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework  # Optional: Clone into a specific directory
+
+      # Set up Ruby environment
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1' # Adjust to required version
+          bundler-cache: true
+
+      # Install Ruby dependencies
+      - name: Install Ruby dependencies
+        run: |
+          cd metasploit-framework
+          bundle install --path vendor/bundle
+
+      # SonarCloud Scan for Metasploit Framework
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=matusso
+            -Dsonar.projectKey=matusso_docker-builds
+            -Dsonar.verbose=true
+            -Dsonar.projectName=metasploit-framework
+            -Dsonar.languages=ruby
+            -Dsonar.sources=metasploit-framework
