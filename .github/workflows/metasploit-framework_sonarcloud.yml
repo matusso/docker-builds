@@ -19,12 +19,15 @@ jobs:
           repository: rapid7/metasploit-framework
           path: metasploit-framework  # Optional: Clone into a specific directory
           ref: '6.4.38'
+
+      - name: Install libpcap
+        run: sudo apt update && sudo apt install -y libpcap-dev
       
       # Set up Ruby environment
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1' # Adjust to required version
+          ruby-version: '3.2.5' # Adjust to required version
           bundler-cache: true
 
       # Install Ruby dependencies
