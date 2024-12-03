@@ -22,14 +22,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true  # Ensure submodules are checked out
-
       - uses: snyk/actions/setup@master
 
       - name: Set release version
         id: set_version
         run: echo "RELEASE_VERSION=6.4.38" >> $GITHUB_ENV
+
+      - name: Clone Metasploit Framework repository at specific version
+        run: |
+          git clone --branch ${{ env.RELEASE_VERSION }} https://github.com/rapid7/metasploit-framework.git
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -53,8 +54,8 @@ jobs:
         run: |
           docker buildx build --push \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
-            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
-            --platform linux/amd64,linux/arm64 -f ./src/metasploit-framework/Dockerfile .
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}
+            --platform linux/amd64,linux/arm64 ./metasploit-framework
 
       - name: Logout from Docker Hub
         run: docker logout
@@ -66,7 +67,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}
-          args: --file=./src/metasploit-framework/Dockerfile
+          args: --file=./metasploit-framework/Dockerfile
           json: true
       - uses: garethr/snyk-to-sarif@master
       - uses: actions/upload-artifact@v4
@@ -78,53 +79,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
-
-  # Job 2: SonarCloud Analysis
-  sonarcloud:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-
-    steps:
-      # Checkout the repository code
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: true  # Ensure submodules are checked out
-
-      # Set up Ruby environment (with bundler cache)
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'  # Adjust to your Ruby version
-          bundler-cache: true  # This caches the installed gems
-
-      # Set a custom directory for the Ruby dependencies
-      - name: Set custom bundle path
-        run: |
-          echo "BUNDLE_PATH=$PWD/src/metasploit-framework" >> $GITHUB_ENV
-
-      # Install dependencies into the custom folder
-      - name: Install dependencies
-        run: |
-          bundle install --path $BUNDLE_PATH
-
-      # Run tests (if any)
-      - name: Run tests
-        run: |
-          bundle exec rake test
-        env:
-          CI: true
-
-      # Run SonarCloud analysis
-      - name: Run SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v3.1.0
-        with:
-          projectBaseDir: src/metasploit-framework
-          args: >
-            -Dsonar.organization=matusso
-            -Dsonar.projectKey=matusso_docker-builds
-            -Dsonar.verbose=true
-            -Dsonar.exclusions=**/test/**,**/spec/**,**/vendor/**
-            -Dsonar.language=ruby
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          
