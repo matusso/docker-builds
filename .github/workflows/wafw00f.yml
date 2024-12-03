@@ -53,7 +53,8 @@ jobs:
         run: |
           docker buildx build --push \
             --tag ghcr.io/${{ github.repository_owner }}/wafw00f:${{ env.RELEASE_VERSION }} \
-            --platform linux/amd64,linux/arm64 ./files/wafw00f
+            --tag ghcr.io/${{ github.repository_owner }}/wafw00f:latest \
+            --platform linux/amd64,linux/arm64 -f ./files/wafw00f/Dockerfile .
       
       - name: Logout from Docker Hub
         run: docker logout
@@ -107,13 +108,13 @@ jobs:
       # Install dependencies
     - name: Install dependencies
       run: |
-        pip install -r src/routersploit/requirements.txt
+        pip install -r src/wafw00f/requirements.txt
         
       # Run SonarCloud analysis
     - name: Run SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@v3.1.0
       with:
-        projectBaseDir: src/routersploit
+        projectBaseDir: src/wafw00f
         args: >
           -Dsonar.organization=matusso
           -Dsonar.projectKey=matusso_docker-builds
