@@ -22,6 +22,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true  # Ensure submodules are checked out
+
       - uses: snyk/actions/setup@master
 
       - name: Set release version
@@ -79,11 +82,14 @@ jobs:
   # Job 2: SonarCloud Analysis
   sonarcloud:
     runs-on: ubuntu-latest
+    needs: build-and-push
 
     steps:
       # Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          submodules: true  # Ensure submodules are checked out
 
       # Set up Ruby environment (with bundler cache)
       - name: Set up Ruby
