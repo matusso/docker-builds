@@ -49,3 +49,4 @@ jobs:
             -Dsonar.projectName=metasploit-framework
             -Dsonar.languages=ruby
             -Dsonar.sources=metasploit-framework
+            -Dsonar.exclusions=**/*.java
