@@ -1,4 +1,4 @@
-name: SonarCloud Scan - RouterSploit
+name: SonarCloud Scan - mvt-project
 
 on:
   push:
@@ -8,18 +8,18 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  sonarcloud-routersploit:
-    name: Scan RouterSploit
+  sonarcloud-mvt:
+    name: Scan mvt-project
     runs-on: ubuntu-latest
 
     steps:
       # Checkout the RouterSploit repository
-      - name: Checkout RouterSploit Repository
+      - name: Checkout mvt-project Repository
         uses: actions/checkout@v4
         with:
-          repository: threat9/routersploit
-          path: routersploit  # Optional: Clone into a specific directory
-          ref: 'v3.4.6'
+          repository: mvt-project/mvt
+          path: mvt  # Optional: Clone into a specific directory
+          ref: 'v2.5.4'
 
       # Set up Python 3.13
       - name: Set up Python
@@ -30,10 +30,20 @@ jobs:
       # Install Python dependencies
       - name: Install Python dependencies
         run: |
-          cd routersploit
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
+          cd mvt
+          apt update && apt install -y \
+            build-essential \
+            git \
+            autoconf \
+            automake \
+            libtool-bin \
+            pkg-config \
+            libcurl4-openssl-dev \
+            libusb-1.0-0-dev \
+            libssl-dev \
+            udev \
+            && rm -rf /var/lib/apt/lists/*
+            
       # SonarCloud Scan for RouterSploit
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2

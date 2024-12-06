@@ -44,7 +44,7 @@ jobs:
         with:
           args: >
             -Dsonar.organization=matusso
-            -Dsonar.projectKey=matusso_docker-builds
+            -Dsonar.projectKey=docker-builds:metasploit-framework
             -Dsonar.verbose=true
             -Dsonar.projectName=metasploit-framework
             -Dsonar.languages=ruby
@@ -53,4 +53,3 @@ jobs:
             -Dsonar.c.file.suffixes=-
             -Dsonar.cpp.file.suffixes=-
             -Dsonar.objc.file.suffixes=-
-            -Dsonar.project.monorepo.enabled=true
