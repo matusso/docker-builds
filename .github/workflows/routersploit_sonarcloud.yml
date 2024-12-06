@@ -47,3 +47,4 @@ jobs:
             -Dsonar.python.version=3.13
             -Dsonar.projectName=routersploit
             -Dsonar.sources=routersploit
+            -Dsonar.project.monorepo.enabled=true

@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "matusso",
+        "projectKey": "matusso_docker-builds"
+    }
+}
