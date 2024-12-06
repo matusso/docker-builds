@@ -42,7 +42,7 @@ jobs:
             libusb-1.0-0-dev \
             libssl-dev \
             udev \
-            && rm -rf /var/lib/apt/lists/*
+            && sudo rm -rf /var/lib/apt/lists/*
             
       # SonarCloud Scan for RouterSploit
       - name: SonarCloud Scan
