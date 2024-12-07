@@ -13,34 +13,34 @@
    1. **[binwalk](https://github.com/ReFirmLabs/binwalk)**  
       - A tool for analyzing binary files for embedded files and executable code.  
       - Useful for reverse engineering firmware and binary analysis.
-      - build: [![ghcr.io/matusso/binwalk](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml)
+      - [![ghcr.io/matusso/binwalk](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml)
 
    2. **[dirsearch](https://github.com/maurosoria/dirsearch)**  
       - A simple command-line tool designed to brute-force directories and files in web servers.  
       - Helps uncover hidden directories and files for security assessments.
-      - build: [![ghcr.io/matusso/dirsearch](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml)
+      - [![ghcr.io/matusso/dirsearch](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml)
 
    3. **[ghauri](https://github.com/r0oth3x49/ghauri)**  
       - A fast and powerful SQL injection detection and exploitation tool.  
       - Ideal for penetration testing web applications.
-      - build: [![ghcr.io/matusso/ghauri](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml)
+      - [![ghcr.io/matusso/ghauri](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml)
 
    4. **[metasploit-framework](https://github.com/rapid7/metasploit-framework)**  
       - A comprehensive penetration testing framework.  
       - Features exploits, payloads, and tools for security testing and research.
-      - build: [![ghcr.io/matusso/metasploit-framework](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml)
-      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Ametasploit-framework&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Ametasploit-framework)
+      - [![ghcr.io/matusso/metasploit-framework](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml)
+        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Ametasploit-framework&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Ametasploit-framework)
 
    5. **[mvt-project](https://github.com/mvt-project/mvt)**  
       - Mobile Verification Toolkit (MVT) for analyzing mobile devices.  
       - Assists in detecting traces of known surveillance spyware.
       - [![ghcr.io/matusso/mvt](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml)
-      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Amvt-project&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Amvt-project)
+        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Amvt-project&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Amvt-project)
 
    6. **[kiterunner](https://github.com/assetnote/kiterunner)**  
       - Kiterunner is a tool that is capable of not only performing traditional content discovery at lightning fast speeds, but also bruteforcing routes/endpoints in modern applications..  
-      - build: [![ghcr.io/matusso/kiterunner](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml)
-      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Akiterunner&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Akiterunner)
+      - [![ghcr.io/matusso/kiterunner](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml)
+        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Akiterunner&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Akiterunner)
 
    7. **[wafw00f](https://github.com/EnableSecurity/wafw00f)**  
       - WAFW00F can detect a number of firewalls  
@@ -49,7 +49,7 @@
    8. **[routersploit](https://github.com/threat9/routersploit)**  
       - The RouterSploit Framework is an open-source exploitation framework dedicated to embedded devices.  
       - [![ghcr.io/matusso/routersploit](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml)
-      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Aroutersploit&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Aroutersploit)
+        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Aroutersploit&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Aroutersploit)
 
    ## Multi-Architecture Support
 
