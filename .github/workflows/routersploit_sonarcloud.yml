@@ -3,7 +3,7 @@ name: SonarCloud Scan - RouterSploit
 on:
   push:
     branches:
-      - sonarcloud-integration
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 

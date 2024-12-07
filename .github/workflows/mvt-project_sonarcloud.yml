@@ -3,7 +3,7 @@ name: SonarCloud Scan - mvt-project
 on:
   push:
     branches:
-      - sonarcloud-integration
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 

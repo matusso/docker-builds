@@ -3,7 +3,7 @@ name: SonarCloud Scan - Metasploit Framework
 on:
   push:
     branches:
-      - sonarcloud-integration
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -38,7 +38,7 @@ jobs:
 
       # SonarCloud Scan for Metasploit Framework
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v4
+        uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
