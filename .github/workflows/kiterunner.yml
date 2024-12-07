@@ -13,6 +13,10 @@ permissions:
   packages: write
   security-events: write
 
+env:
+  RELEASE_VERSION: "1.0.2"
+  KR_DIR: "/usr/local/kiterunner"
+
 jobs:
   build-and-push:
     runs-on: ${{ matrix.os }}
@@ -23,10 +27,6 @@ jobs:
     steps:        
       - uses: actions/checkout@v3
       - uses: snyk/actions/setup@master
-
-      - name: Set release version
-        id: set_version
-        run: echo "RELEASE_VERSION=1.0.2" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -87,13 +87,7 @@ jobs:
         with:
           repository: assetnote/kiterunner
           path: kiterunner  # Optional: Clone into a specific directory
-          ref: 'v2.5.4'
-
-      # Set up Python 3.13
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13'
+          ref: ${{ env.RELEASE_VERSION }}
 
       # Install dependencies
       - name: Install dependencies

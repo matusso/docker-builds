@@ -1,10 +1,6 @@
 # Use Alpine Linux as the base image
 FROM alpine:latest
 
-# Set environment variables
-ENV KR_VERSION="v1.0.2" \
-    KR_DIR="/usr/local/kiterunner"
-
 # Install dependencies
 RUN apk update && apk add --no-cache \
     bash \
@@ -15,7 +11,7 @@ RUN apk update && apk add --no-cache \
 
 # Clone kiterunner repository and build
 WORKDIR $KR_DIR
-RUN git clone --depth=1 --branch "$KR_VERSION"  https://github.com/assetnote/kiterunner.git . \
+RUN git clone --depth=1 --branch "$RELEASE_VERSION"  https://github.com/assetnote/kiterunner.git . \
     && make build \
     && ln -s $(pwd)/dist/kr /usr/local/bin/kr
 
