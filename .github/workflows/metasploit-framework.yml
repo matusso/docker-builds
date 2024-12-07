@@ -4,15 +4,20 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
+      - msf-6.4.39
   pull_request:
-    branches:
-      - main  # Change to your default branch if not main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
   packages: write
   security-events: write
 
+
+env:
+  RELEASE_VERSION: "6.4.39"
+  RUBY_VERSION: "3.2.5"
+  
 jobs:
   build-and-push:
     runs-on: ${{ matrix.os }}
@@ -21,16 +26,14 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Metasploit Framework Repository
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework  # Optional: Clone into a specific directory
+          ref: ${{ env.RELEASE_VERSION }}
+
       - uses: snyk/actions/setup@master
-
-      - name: Set release version
-        id: set_version
-        run: echo "RELEASE_VERSION=6.4.38" >> $GITHUB_ENV
-
-      - name: Clone Metasploit Framework repository at specific version
-        run: |
-          git clone --branch ${{ env.RELEASE_VERSION }} https://github.com/rapid7/metasploit-framework.git
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -49,6 +52,22 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+
+      - name: Install libpcap
+        run: sudo apt update && sudo apt install -y libpcap-dev
+            
+            # Set up Ruby environment
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+      
+            # Install Ruby dependencies
+      - name: Install Ruby dependencies
+        run: |
+          cd metasploit-framework
+          bundle install --path vendor/bundle
 
       - name: Build and push Docker image
         run: |
@@ -79,4 +98,22 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
-          
+
+      # SonarCloud Scan for Metasploit Framework
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarqube-scan-action@v4
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=matusso
+            -Dsonar.projectKey=docker-builds:metasploit-framework
+            -Dsonar.verbose=true
+            -Dsonar.projectName=metasploit-framework
+            -Dsonar.languages=ruby
+            -Dsonar.sources=metasploit-framework
+            -Dsonar.exclusions=**/*.java,**/*.c,**/*.cpp,**/*.h,**/*.mm,**/*.m
+            -Dsonar.c.file.suffixes=-
+            -Dsonar.cpp.file.suffixes=-
+            -Dsonar.objc.file.suffixes=-
