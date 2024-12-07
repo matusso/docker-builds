@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
+      - sonarcloud-kiterunner
   pull_request:
-    branches:
-      - main  # Change to your default branch if not main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -75,3 +75,53 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
+
+  sonarcloud-kiterunner:
+    name: Scan kiterunner
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the kiterunner  repository
+      - name: Checkout kiterunner Repository
+        uses: actions/checkout@v4
+        with:
+          repository: assetnote/kiterunner
+          path: kiterunner  # Optional: Clone into a specific directory
+          ref: 'v2.5.4'
+
+      # Set up Python 3.13
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          cd kiterunner
+          sudo apt update && sudo apt install -y \
+            build-essential \
+            git \
+            autoconf \
+            automake \
+            libtool-bin \
+            pkg-config \
+            libcurl4-openssl-dev \
+            libusb-1.0-0-dev \
+            libssl-dev \
+            udev \
+            && sudo rm -rf /var/lib/apt/lists/*
+            
+      # SonarCloud Scan
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarqube-scan-action@v4
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=matusso
+            -Dsonar.projectKey=docker-builds:kiterunner
+            -Dsonar.verbose=true
+            -Dsonar.projectName=kiterunner
+            -Dsonar.sources=kiterunner

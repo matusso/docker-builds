@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the RouterSploit repository
+      # Checkout the mvt-project repository
       - name: Checkout mvt-project Repository
         uses: actions/checkout@v4
         with:
@@ -27,8 +27,8 @@ jobs:
         with:
           python-version: '3.13'
 
-      # Install Python dependencies
-      - name: Install Python dependencies
+      # Install dependencies
+      - name: Install dependencies
         run: |
           cd mvt
           sudo apt update && sudo apt install -y \
@@ -44,7 +44,7 @@ jobs:
             udev \
             && sudo rm -rf /var/lib/apt/lists/*
             
-      # SonarCloud Scan for RouterSploit
+      # SonarCloud Scan
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true

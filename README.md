@@ -1,90 +1,104 @@
-# docker-builds
+   # docker-builds
 
-## Security Tools Docker Images
+   ## Security Tools Docker Images
 
-This repository automates the process of building and publishing Docker images for various popular security tools.
+   This repository automates the process of building and publishing Docker images for various popular security tools.
 
-## About
+   ## About
 
-This project simplifies the deployment of essential security tools by containerizing them. Using these Docker images, you can quickly run tools without worrying about installation dependencies or conflicts on your host system.
+   This project simplifies the deployment of essential security tools by containerizing them. Using these Docker images, you can quickly run tools without worrying about installation dependencies or conflicts on your host system.
 
-The following security tools are included in this repository:
+   The following security tools are included in this repository:
 
-1. **[binwalk](https://github.com/ReFirmLabs/binwalk)**  
-   - A tool for analyzing binary files for embedded files and executable code.  
-   - Useful for reverse engineering firmware and binary analysis.
-   - [![ghcr.io/matusso/binwalk](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml)
+   1. **[binwalk](https://github.com/ReFirmLabs/binwalk)**  
+      - A tool for analyzing binary files for embedded files and executable code.  
+      - Useful for reverse engineering firmware and binary analysis.
+      - build: [![ghcr.io/matusso/binwalk](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml)
 
-2. **[dirsearch](https://github.com/maurosoria/dirsearch)**  
-   - A simple command-line tool designed to brute-force directories and files in web servers.  
-   - Helps uncover hidden directories and files for security assessments.
-   - [![ghcr.io/matusso/dirsearch](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml)
+   2. **[dirsearch](https://github.com/maurosoria/dirsearch)**  
+      - A simple command-line tool designed to brute-force directories and files in web servers.  
+      - Helps uncover hidden directories and files for security assessments.
+      - build: [![ghcr.io/matusso/dirsearch](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml)
 
-3. **[ghauri](https://github.com/r0oth3x49/ghauri)**  
-   - A fast and powerful SQL injection detection and exploitation tool.  
-   - Ideal for penetration testing web applications.
-   - [![ghcr.io/matusso/ghauri](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml)
+   3. **[ghauri](https://github.com/r0oth3x49/ghauri)**  
+      - A fast and powerful SQL injection detection and exploitation tool.  
+      - Ideal for penetration testing web applications.
+      - build: [![ghcr.io/matusso/ghauri](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml)
 
-4. **[metasploit-framework](https://github.com/rapid7/metasploit-framework)**  
-   - A comprehensive penetration testing framework.  
-   - Features exploits, payloads, and tools for security testing and research.
-   - [![ghcr.io/matusso/metasploit-framework](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml)
+   4. **[metasploit-framework](https://github.com/rapid7/metasploit-framework)**  
+      - A comprehensive penetration testing framework.  
+      - Features exploits, payloads, and tools for security testing and research.
+      - build: [![ghcr.io/matusso/metasploit-framework](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml)
+      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Ametasploit-framework&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Ametasploit-framework)
 
-5. **[mvt-project](https://github.com/mvt-project/mvt)**  
-   - Mobile Verification Toolkit (MVT) for analyzing mobile devices.  
-   - Assists in detecting traces of known surveillance spyware.
-   - [![ghcr.io/matusso/mvt](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml)
+   5. **[mvt-project](https://github.com/mvt-project/mvt)**  
+      - Mobile Verification Toolkit (MVT) for analyzing mobile devices.  
+      - Assists in detecting traces of known surveillance spyware.
+      - [![ghcr.io/matusso/mvt](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml)
+      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Amvt-project&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Amvt-project)
 
-6. **[kiterunner](https://github.com/assetnote/kiterunner)**  
-   - Kiterunner is a tool that is capable of not only performing traditional content discovery at lightning fast speeds, but also bruteforcing routes/endpoints in modern applications..  
-   - [![ghcr.io/matusso/kiterunner](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml)
+   6. **[kiterunner](https://github.com/assetnote/kiterunner)**  
+      - Kiterunner is a tool that is capable of not only performing traditional content discovery at lightning fast speeds, but also bruteforcing routes/endpoints in modern applications..  
+      - build: [![ghcr.io/matusso/kiterunner](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml)
+      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Akiterunner&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Akiterunner)
 
-7. **[wafw00f](https://github.com/EnableSecurity/wafw00f)**  
-   - WAFW00F can detect a number of firewalls  
-   - [![ghcr.io/matusso/wafw00f](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml)
+   7. **[wafw00f](https://github.com/EnableSecurity/wafw00f)**  
+      - WAFW00F can detect a number of firewalls  
+      - [![ghcr.io/matusso/wafw00f](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml)
 
-8. **[routersploit](https://github.com/threat9/routersploit)**  
-   - The RouterSploit Framework is an open-source exploitation framework dedicated to embedded devices.  
-   - [![ghcr.io/matusso/routersploit](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml)
+   8. **[routersploit](https://github.com/threat9/routersploit)**  
+      - The RouterSploit Framework is an open-source exploitation framework dedicated to embedded devices.  
+      - [![ghcr.io/matusso/routersploit](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml)
+      - vulns: [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Aroutersploit&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Aroutersploit)
 
-## Multi-Architecture Support
+   ## Multi-Architecture Support
 
-All Docker images are built and published for the following architectures:
-- **amd64**: For x86_64 systems.
-- **arm64**: For ARM-based systems, including Apple M1/M2 and Raspberry Pi.
+   All Docker images are built and published for the following architectures:
+   - **amd64**: For x86_64 systems.
+   - **arm64**: For ARM-based systems, including Apple M1/M2 and Raspberry Pi.
 
-## Why Use This Project?
+   ## SonarCloud Scanning
 
-- **Consistency:** Pre-built Docker images ensure that the tools work as intended across various environments.  
-- **Convenience:** No need to manually install or configure dependencies for each tool.  
-- **Automation:** GitHub Actions automatically build and publish updated Docker images when changes are made to the repository.  
+   This repository integrates with SonarCloud to maintain high code quality and security standards.
+   Each pull request and push to the main branch is automatically analyzed using SonarCloud.
+   The analysis covers:
+      - Code smells
+      - Security hotspots
+      - Bugs
+      - Maintainability
 
-## How to Use
+   ## Why Use This Project?
 
-1. Pull the desired tool's Docker image:  
-```bash
-docker pull ghcr.io/matusso/<tool-name>
-```
+   - **Consistency:** Pre-built Docker images ensure that the tools work as intended across various environments.  
+   - **Convenience:** No need to manually install or configure dependencies for each tool.  
+   - **Automation:** GitHub Actions automatically build and publish updated Docker images when changes are made to the repository.  
 
-2. Run the tool:
-```bash
-docker run --rm -it ghcr.io/matusso/<tool-name> [tool-arguments]  
-```
+   ## How to Use
 
-#### Example
+   1. Pull the desired tool's Docker image:  
+   ```bash
+   docker pull ghcr.io/matusso/<tool-name>
+   ```
 
-To use dirsearch:
+   2. Run the tool:
+   ```bash
+   docker run --rm -it ghcr.io/matusso/<tool-name> [tool-arguments]  
+   ```
 
-```
-docker pull ghcr.io/matusso/dirsearch  
-docker run --rm -it ghcr.io/matusso/dirsearch -u https://example.com  
-```
+   #### Example
 
-#### Contributions
+   To use dirsearch:
 
-Contributions to add more tools or improve the existing ones are welcome. Please create a pull request or open an issue for discussion.
+   ```
+   docker pull ghcr.io/matusso/dirsearch  
+   docker run --rm -it ghcr.io/matusso/dirsearch -u https://example.com  
+   ```
+
+   #### Contributions
+
+   Contributions to add more tools or improve the existing ones are welcome. Please create a pull request or open an issue for discussion.
 
 
-#### License
+   #### License
 
-This repository is distributed under the MIT License. Please check the individual projects for their respective licenses.
+   This repository is distributed under the MIT License. Please check the individual projects for their respective licenses.
