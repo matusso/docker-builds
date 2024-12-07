@@ -98,36 +98,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
-  
-  sonarcloud-metasploit:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    steps:
-      - name: Checkout Metasploit Framework Repository
-        uses: actions/checkout@v4
-        with:
-          repository: rapid7/metasploit-framework
-          path: metasploit-framework  # Optional: Clone into a specific directory
-          ref: ${{ env.RELEASE_VERSION }}
-
-      - name: Install libpcap
-        run: sudo apt update && sudo apt install -y libpcap-dev
-      
-      # Set up Ruby environment
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ env.RUBY_VERSION }}
-          bundler-cache: true
-
-      # Install Ruby dependencies
-      - name: Install Ruby dependencies
-        run: |
-          cd metasploit-framework
-          bundle install --path vendor/bundle
 
       # SonarCloud Scan for Metasploit Framework
       - name: SonarCloud Scan
