@@ -1,6 +1,9 @@
 # Use Alpine Linux as the base image
 FROM alpine:latest
 
+ENV KR_DIR=$KR_DIR
+ENV RELEASE_VERSION=$RELEASE_VERSION
+
 # Install dependencies
 RUN apk update && apk add --no-cache \
     bash \
