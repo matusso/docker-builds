@@ -1,7 +1,6 @@
 ARG PYTHON_VERSION=${PYTHON_VERSION} \
     RELEASE_VERSION=${RELEASE_VERSION}
 
-# Use an official Python runtime as a parent image
 FROM python:${PYTHON_VERSION}-alpine
 
 ENV PYTHON_VERSION=${PYTHON_VERSION} \
