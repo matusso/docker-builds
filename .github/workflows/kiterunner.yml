@@ -49,7 +49,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker buildx build --push \
-            --build-arg KR_DIR=${{ env.KR_DIR }} --build-arg RELEASE_VERSION=${{ env.RELEASE_VERSION }} \
+            --build-arg "KR_DIR=${{ env.KR_DIR }}" --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
             --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/kiterunner:latest \
             --platform linux/amd64,linux/arm64 ./files/kiterunner

@@ -4,14 +4,18 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
+      - sonarcloud-ghauri
   pull_request:
-    branches:
-      - main  # Change to your default branch if not main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
   packages: write
   security-events: write
+
+env:
+  PYTHON_VERSION: "3.13"
+  RELEASE_VERSION: "1.4.1"
 
 jobs:
   build-and-push:
@@ -21,12 +25,8 @@ jobs:
         os: [ubuntu-latest]
 
     steps:        
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: snyk/actions/setup@master
-
-      - name: Set release version
-        id: set_version
-        run: echo "RELEASE_VERSION=1.4.1" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -48,7 +48,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker buildx build --push \
+          docker buildx build --push --build-context python=docker-image://python:${{ env.PYTHON_VERSION }}-alpine \
+            --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
             --tag ghcr.io/${{ github.repository_owner }}/ghauri:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/ghauri:latest \
             --platform linux/amd64,linux/arm64 ./files/ghauri
@@ -75,3 +76,56 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
+
+  sonarcloud-ghauri:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      # Checkout the kiterunner  repository
+      - name: Checkout kiterunner Repository
+        uses: actions/checkout@v4
+        with:
+          repository: r0oth3x49/ghauri
+          path: ghauri  # Optional: Clone into a specific directory
+          ref: ${{ env.RELEASE_VERSION }}
+
+      # Set up Python 3.13
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          cd ghauri
+          sudo apt update && sudo apt install -y \
+            build-essential \
+            git \
+            autoconf \
+            automake \
+            libtool-bin \
+            pkg-config \
+            libcurl4-openssl-dev \
+            libusb-1.0-0-dev \
+            libssl-dev \
+            udev \
+            && sudo rm -rf /var/lib/apt/lists/*
+            
+      # SonarCloud Scan
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarqube-scan-action@v4
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=matusso
+            -Dsonar.projectKey=docker-builds:ghauri
+            -Dsonar.verbose=true
+            -Dsonar.python.version=${{ env.PYTHON_VERSION }}
+            -Dsonar.projectName=ghauri
+            -Dsonar.sources=ghauri
