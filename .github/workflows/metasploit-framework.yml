@@ -13,7 +13,6 @@ permissions:
   packages: write
   security-events: write
 
-
 env:
   RELEASE_VERSION: "6.4.39"
   RUBY_VERSION: "3.2.5"
