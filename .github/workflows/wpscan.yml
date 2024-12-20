@@ -15,7 +15,7 @@ permissions:
 
 env:
   RELEASE_VERSION: "v3.8.27"
-  RUBY_VERSION: "3.2.5"
+  RUBY_VERSION: "3.0.2"
   
 jobs:
   build-and-push:
