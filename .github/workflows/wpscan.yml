@@ -66,6 +66,7 @@ jobs:
       - name: Install Ruby dependencies
         run: |
           cd wpscan
+          bundle config set force_ruby_platform true
           bundle install --path vendor/bundle
 
       - name: Build and push Docker image
