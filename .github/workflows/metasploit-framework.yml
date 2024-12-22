@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
-      - msf-6.4.39
+      - msf-6.4.41
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -14,7 +14,7 @@ permissions:
   security-events: write
 
 env:
-  RELEASE_VERSION: "6.4.39"
+  RELEASE_VERSION: "6.4.41"
   RUBY_VERSION: "3.2.5"
   
 jobs:
