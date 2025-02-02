@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
-      - msf-6.4.41
+      - msf-6.4.47
   pull_request:
     types: [opened, synchronize, reopened]
 
