@@ -23,7 +23,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        compiler: [ clang ]
 
     steps:
       - name: Checkout Metasploit Framework Repository
@@ -49,7 +48,7 @@ jobs:
         id: install_cc
         uses: rlalik/setup-cpp-compiler@master
         with:
-          compiler: latest
+          compiler: clang
   
       - name: Cache Docker layers
         uses: actions/cache@v3
