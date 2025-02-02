@@ -71,8 +71,8 @@ jobs:
       
             # Install Ruby dependencies
       - name: Install Ruby dependencies
-        run: |
-          shell: bash
+        shell: bash
+        run: |  
           cd metasploit-framework
           bundle install --path vendor/bundle
         env:
