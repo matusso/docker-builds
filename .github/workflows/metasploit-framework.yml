@@ -79,11 +79,15 @@ jobs:
             CXX: ${{ steps.install_cc.outputs.cxx }}
 
       - name: Build and push Docker image
+        shell: bash
         run: |
           docker buildx build --push \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
             --platform linux/amd64,linux/arm64 ./metasploit-framework
+        env:
+            CC: ${{ steps.install_cc.outputs.cc }}
+            CXX: ${{ steps.install_cc.outputs.cxx }}
 
       - name: Logout from Docker Hub
         run: docker logout
