@@ -59,7 +59,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Install libpcap
-        run: sudo apt update && sudo apt install -y libpcap-dev
+        run: sudo apt update && sudo apt install -y libpcap-dev libpq-dev
             
             # Set up Ruby environment
       - name: Set up Ruby
