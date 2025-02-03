@@ -15,8 +15,7 @@ permissions:
 
 env:
   RELEASE_VERSION: "6.4.47"
-  RUBY_VERSION: "3.2.5"
-  
+
 jobs:
   build-and-push:
     runs-on: ${{ matrix.os }}
@@ -58,36 +57,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Install libpcap
-        run: sudo apt update && sudo apt install -y libpcap-dev libpq-dev
-            
-            # Set up Ruby environment
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ env.RUBY_VERSION }}
-          bundler-cache: true
-      
-            # Install Ruby dependencies
-      - name: Install Ruby dependencies
-        shell: bash
-        run: |  
-          cd metasploit-framework
-          bundle install --path vendor/bundle
-        env:
-            CC: ${{ steps.install_cc.outputs.cc }}
-            CXX: ${{ steps.install_cc.outputs.cxx }}
-
       - name: Build and push Docker image
         shell: bash
         run: |
           docker buildx build --push \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
-            --platform linux/amd64,linux/arm64 ./metasploit-framework
-        env:
-            CC: ${{ steps.install_cc.outputs.cc }}
-            CXX: ${{ steps.install_cc.outputs.cxx }}
+            --platform linux/amd64,linux/arm64 https://github.com/rapid7/metasploit-framework.git#${{ env.RELEASE_VERSION }}
 
       - name: Logout from Docker Hub
         run: docker logout
