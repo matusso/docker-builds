@@ -61,6 +61,7 @@ jobs:
         shell: bash
         run: |
           docker buildx build --push \
+            --cache-to type=local,dest=/home/runner/work/docker-builds/docker-builds/.buildx-cache --cache-from type=local,src=/home/runner/work/docker-builds/docker-builds/.buildx-cache \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
             --platform linux/amd64,linux/arm64 https://github.com/rapid7/metasploit-framework.git#${{ env.RELEASE_VERSION }}
