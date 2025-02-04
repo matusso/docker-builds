@@ -44,7 +44,9 @@ jobs:
           docker build --platform linux/amd64 \
             --build-arg "KR_DIR=${{ env.KR_DIR }}" --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
             --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }} \
-            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:latest ./files/kiterunner
+            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:latest-amd64 ./files/kiterunner
+            docker push ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }}-amd64
+            docker push ghcr.io/${{ github.repository_owner }}/kiterunner:latest-amd64
       
       - name: Logout from Docker Hub
         run: docker logout
