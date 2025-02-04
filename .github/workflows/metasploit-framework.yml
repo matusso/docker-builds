@@ -46,7 +46,7 @@ jobs:
         run: docker logout
 
   build-and-push-arm64:
-    runs-on: [self-hosted, linux, arm64]  # Native ARM64 GitHub runner
+    runs-on: ubuntu-22.04-arm64
     steps:
       - name: Checkout Metasploit Framework Repository
         uses: actions/checkout@v4
