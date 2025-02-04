@@ -43,7 +43,7 @@ jobs:
         run: |
           docker build --platform linux/amd64 \
             --build-arg "KR_DIR=${{ env.KR_DIR }}" --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
-            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }} \
+            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }}-amd64 \
             --tag ghcr.io/${{ github.repository_owner }}/kiterunner:latest-amd64 ./files/kiterunner
             docker push ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }}-amd64
             docker push ghcr.io/${{ github.repository_owner }}/kiterunner:latest-amd64
@@ -68,7 +68,7 @@ jobs:
         run: |
           docker build --platform linux/arm64 \
             --build-arg "KR_DIR=${{ env.KR_DIR }}" --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
-            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }} \
+            --tag ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }}-arm64 \
             --tag ghcr.io/${{ github.repository_owner }}/kiterunner:latest-arm64 ./files/kiterunner
           docker push ghcr.io/${{ github.repository_owner }}/kiterunner:${{ env.RELEASE_VERSION }}-arm64
           docker push ghcr.io/${{ github.repository_owner }}/kiterunner:latest-arm64
