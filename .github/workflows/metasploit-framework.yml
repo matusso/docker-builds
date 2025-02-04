@@ -1,9 +1,8 @@
 name: rapid7/metasploit-framework
-
 on:
   push:
     branches:
-      - main  # Change to your default branch if not main
+      - main
       - msf-6.4.47
   pull_request:
     types: [opened, synchronize, reopened]
@@ -17,21 +16,15 @@ env:
   RELEASE_VERSION: "6.4.47"
 
 jobs:
-  build-and-push:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
+  build-and-push-amd64:
+    runs-on: ubuntu-latest  # Native amd64 GitHub runner
     steps:
       - name: Checkout Metasploit Framework Repository
         uses: actions/checkout@v4
         with:
           repository: rapid7/metasploit-framework
-          path: metasploit-framework  # Optional: Clone into a specific directory
+          path: metasploit-framework
           ref: ${{ env.RELEASE_VERSION }}
-
-      - uses: snyk/actions/setup@master
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -40,34 +33,78 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-  
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Build and push Docker image
+      - name: Build and push amd64 Docker image
         run: |
-          docker buildx build --push \
-            --cache-to type=local,dest=/home/runner/work/docker-builds/docker-builds/.buildx-cache --cache-from type=local,src=/home/runner/work/docker-builds/docker-builds/.buildx-cache \
-            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
-            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
-            --platform linux/amd64,linux/arm64 https://github.com/rapid7/metasploit-framework.git#${{ env.RELEASE_VERSION }}
+          docker build --platform linux/amd64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-amd64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-amd64 \
+            metasploit-framework
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-amd64
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-amd64
 
       - name: Logout from Docker Hub
         run: docker logout
-      
+
+  build-and-push-arm64:
+    runs-on: [self-hosted, linux, arm64]  # Native ARM64 GitHub runner
+    steps:
+      - name: Checkout Metasploit Framework Repository
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+          ref: ${{ env.RELEASE_VERSION }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push arm64 Docker image
+        run: |
+          docker build --platform linux/arm64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-arm64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-arm64 \
+            metasploit-framework
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-arm64
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-arm64
+
+      - name: Logout from Docker Hub
+        run: docker logout
+
+  create-multiarch-manifest:
+    needs: [build-and-push-amd64, build-and-push-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multi-platform manifest
+        run: |
+          docker manifest create ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-amd64 \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-arm64
+          
+          docker manifest create ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-amd64 \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-arm64
+          
+          docker manifest push ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}
+          docker manifest push ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest
+
+      - name: Logout from Docker Hub
+        run: docker logout
+
+  security-scan:
+    needs: create-multiarch-manifest
+    runs-on: ubuntu-latest
+    steps:
       - name: Check ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} image
         uses: snyk/actions/docker@master
         continue-on-error: true
@@ -77,18 +114,22 @@ jobs:
           image: ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}
           args: --file=./metasploit-framework/Dockerfile
           json: true
+
       - uses: garethr/snyk-to-sarif@master
       - uses: actions/upload-artifact@v4
         with:
           name: SARIF
           path: snyk.sarif
-      
+
       - name: Upload SARIF Report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
 
-      # SonarCloud Scan for Metasploit Framework
+  sonarcloud-scan:
+    needs: create-multiarch-manifest
+    runs-on: ubuntu-latest
+    steps:
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true
