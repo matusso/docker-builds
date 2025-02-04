@@ -1,10 +1,9 @@
 name: rapid7/metasploit-framework
-
 on:
   push:
     branches:
-      - main  # Change to your default branch if not main
-      - msf-6.4.41
+      - main
+      - msf-6.4.47
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -15,24 +14,17 @@ permissions:
 
 env:
   RELEASE_VERSION: "6.4.47"
-  RUBY_VERSION: "3.2.5"
-  
-jobs:
-  build-and-push:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
 
+jobs:
+  build-and-push-amd64:
+    runs-on: ubuntu-latest  # Native amd64 GitHub runner
     steps:
       - name: Checkout Metasploit Framework Repository
         uses: actions/checkout@v4
         with:
           repository: rapid7/metasploit-framework
-          path: metasploit-framework  # Optional: Clone into a specific directory
+          path: metasploit-framework
           ref: ${{ env.RELEASE_VERSION }}
-
-      - uses: snyk/actions/setup@master
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -41,43 +33,85 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-  
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Install libpcap
-        run: sudo apt update && sudo apt install -y libpcap-dev
-            
-            # Set up Ruby environment
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ env.RUBY_VERSION }}
-          bundler-cache: true
-      
-            # Install Ruby dependencies
-      - name: Install Ruby dependencies
+      - name: Build and push amd64 Docker image
         run: |
-          cd metasploit-framework
-          bundle install --path vendor/bundle
-
-      - name: Build and push Docker image
-        run: |
-          docker buildx build --push \
-            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
-            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
-            --platform linux/amd64,linux/arm64 ./metasploit-framework
+          docker build --platform linux/amd64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-amd64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-amd64 \
+            metasploit-framework
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-amd64
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-amd64
 
       - name: Logout from Docker Hub
         run: docker logout
-      
+
+  build-and-push-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout Metasploit Framework Repository
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+          ref: ${{ env.RELEASE_VERSION }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push arm64 Docker image
+        run: |
+          docker build --platform linux/arm64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-arm64 \
+            --tag ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-arm64 \
+            metasploit-framework
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-arm64
+          docker push ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-arm64
+
+      - name: Logout from Docker Hub
+        run: docker logout
+
+  create-multiarch-manifest:
+    needs: [build-and-push-amd64, build-and-push-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push multi-platform manifest
+        run: |
+          docker manifest create ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-amd64 \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}-arm64
+          
+          docker manifest create ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-amd64 \
+            --amend ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest-arm64
+          
+          docker manifest push ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}
+          docker manifest push ghcr.io/${{ github.repository_owner }}/metasploit-framework:latest
+
+      - name: Logout from Docker Hub
+        run: docker logout
+
+  security-scan:
+    needs: create-multiarch-manifest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Metasploit Framework Repository
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+          ref: ${{ env.RELEASE_VERSION }}
+          
       - name: Check ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} image
         uses: snyk/actions/docker@master
         continue-on-error: true
@@ -87,18 +121,22 @@ jobs:
           image: ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }}
           args: --file=./metasploit-framework/Dockerfile
           json: true
+
       - uses: garethr/snyk-to-sarif@master
       - uses: actions/upload-artifact@v4
         with:
           name: SARIF
           path: snyk.sarif
-      
+
       - name: Upload SARIF Report to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
 
-      # SonarCloud Scan for Metasploit Framework
+  sonarcloud-scan:
+    needs: create-multiarch-manifest
+    runs-on: ubuntu-latest
+    steps:
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@v4
         continue-on-error: true
