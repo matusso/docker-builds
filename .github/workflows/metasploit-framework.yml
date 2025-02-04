@@ -105,6 +105,13 @@ jobs:
     needs: create-multiarch-manifest
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Metasploit Framework Repository
+        uses: actions/checkout@v4
+        with:
+          repository: rapid7/metasploit-framework
+          path: metasploit-framework
+          ref: ${{ env.RELEASE_VERSION }}
+          
       - name: Check ghcr.io/${{ github.repository_owner }}/metasploit-framework:${{ env.RELEASE_VERSION }} image
         uses: snyk/actions/docker@master
         continue-on-error: true
