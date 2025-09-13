@@ -6,6 +6,7 @@ on:
       - "main"
     paths:
       - .github/workflows/caddy.yml
+      - "files/caddy/**"
 
   workflow_dispatch:
 

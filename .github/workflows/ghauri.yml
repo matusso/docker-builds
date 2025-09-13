@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
-      - sonarcloud-ghauri
-  pull_request:
-    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/ghauri.yml'
+      - 'files/ghauri/**'
 
 permissions:
   contents: read

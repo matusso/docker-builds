@@ -3,8 +3,9 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/metasploit-framework.yml'
+      - 'files/metasploit-framework/**'
 
 permissions:
   contents: read

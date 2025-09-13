@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
-  pull_request:
-    branches:
-      - main  # Change to your default branch if not main
-
+    paths:
+      - '.github/workflows/binwalk.yml'
+      - 'files/binwalk/**'
 permissions:
   contents: read
   packages: write  # Required for GitHub Container Registry
