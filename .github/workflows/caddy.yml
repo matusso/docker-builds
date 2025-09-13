@@ -123,11 +123,7 @@ jobs:
       - name: Compute tags
         id: meta
         run: |
-          VERSION=${GITHUB_REF##*/}
-          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
-            VERSION="sha-${GITHUB_SHA::7}"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${{ env.CADDY_VERSION }}" >> $GITHUB_OUTPUT
           echo "tags=${{ env.IMAGE_NAME }}:${VERSION},${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
 
       - name: Build & push
