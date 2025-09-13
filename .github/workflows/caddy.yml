@@ -2,8 +2,9 @@ name: Build Caddy (xcaddy) and Publish
 
 on:
   push:
-    tags:
+    branches:
       - main
+    tags:
       - caddy-v*.*.* # build on version tags like v1.0.0
   workflow_dispatch:
 
