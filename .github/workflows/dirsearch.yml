@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main  # Change to your default branch if not main
-  pull_request:
-    branches:
-      - main  # Change to your default branch if not main
+    paths:
+      - '.github/workflows/dirsearch.yml'
+      - 'files/dirsearch/**'
 
 permissions:
   contents: read
