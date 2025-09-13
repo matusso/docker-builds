@@ -17,10 +17,11 @@ permissions:
 env:
   # Change this if you want a different package name in GHCR
   APP_SLUG: caddy
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}_${{ github.env.APP_SLUG }}
+  CADDY_VERSION: "v2.10.2"
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}${APP_SLUG}-${CADDY_VERSION}
   CADDY_MODULES: github.com/caddy-dns/cloudflare
   GO_VERSION: "1.22"
-  CADDY_VERSION: "v2.10.2"
+  
 
 concurrency:
   # Avoid overlapping pushes from the same branch racing
