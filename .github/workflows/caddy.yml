@@ -1,32 +1,28 @@
-name: Publish Caddy Packages (xcaddy -> GHCR generic)
+name: Publish Caddy Binaries to Release
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - .github/workflows/caddy.yml
-      - "files/caddy/**"
-  workflow_dispatch:
+    tags:
+      - "v*"            # e.g., v2.10.2
+      - "caddy-v*"      # optional: caddy-v2.10.2
+  workflow_dispatch:     # manual run support
 
 permissions:
-  contents: read
-  packages: write
+  contents: write        # needed to create/update releases
 
 env:
-  # ---- customize here ----
   APP_SLUG: caddy
-  CADDY_VERSION: "v2.10.2"
+  CADDY_VERSION: "v2.10.2"                    # Caddy version passed to xcaddy
   CADDY_MODULES: github.com/caddy-dns/cloudflare
   GO_VERSION: "1.22"
-  # ------------------------
 
 concurrency:
-  group: caddy-${{ github.ref }}
+  group: caddy-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-and-publish:
-    name: Build & publish ${{ matrix.osarch }}
+  build:
+    name: Build ${{ matrix.osarch }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -63,85 +59,78 @@ jobs:
       - name: Install xcaddy
         run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
-      - name: Compute metadata
+      - name: Compute naming bits
         id: meta
         run: |
-          SAFE_BRANCH="$(echo "${GITHUB_REF_NAME}" | tr '/' '-' )"
-          SHORTSHA="${GITHUB_SHA::7}"
+          # Use the tag name if present (on tag push). On workflow_dispatch, use ref name.
+          TAG="${GITHUB_REF_NAME}"
           MOD_SLUG="$(basename "${{ env.CADDY_MODULES }}")"   # e.g. cloudflare
-          echo "branch=${SAFE_BRANCH}"    >> $GITHUB_OUTPUT
-          echo "shortsha=${SHORTSHA}"     >> $GITHUB_OUTPUT
-          echo "modslug=${MOD_SLUG}"      >> $GITHUB_OUTPUT
+          echo "tag=${TAG}"       >> "$GITHUB_OUTPUT"
+          echo "modslug=${MOD_SLUG}" >> "$GITHUB_OUTPUT"
 
-      - name: Build caddy (${{ matrix.osarch }})
+      - name: Build xcaddy (${{ matrix.osarch }})
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           GOARM: ${{ matrix.goarm }}
         run: |
           mkdir -p dist
-          BIN="caddy-${{ steps.meta.outputs.branch }}-${{ matrix.osarch }}"
+          # final binary name: caddy-<osarch>-<module>-<tag or version>
+          VER="${{ steps.meta.outputs.tag }}"
+          [ -z "$VER" ] && VER="${{ env.CADDY_VERSION }}"
+          BIN="${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-${VER}"
+
           $(go env GOPATH)/bin/xcaddy build ${{ env.CADDY_VERSION }} \
             --output "dist/${BIN}" \
             --with ${{ env.CADDY_MODULES }}
+
           chmod +x "dist/${BIN}"
           pushd dist >/dev/null
           sha256sum "${BIN}" > "${BIN}.sha256"
           tar -czf "${BIN}.tar.gz" "${BIN}"
           popd >/dev/null
 
-      - name: Install ORAS
-        run: |
-          curl -sSfL https://github.com/oras-project/oras/releases/latest/download/oras_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64.tar.gz \
-          | tar -xzC /usr/local/bin oras
+      - name: Upload artifact (${{ matrix.osarch }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: caddy-build-${{ matrix.osarch }}
+          path: |
+            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-* # tar.gz + bin + sha256
+          if-no-files-found: error
+          retention-days: 7
 
-      - name: Login to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u "${{ github.actor }}" --password-stdin
+  release:
+    name: Create/Update Release & Upload Assets
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Push package to GHCR (${{ matrix.osarch }})
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+          merge-multiple: true
+
+      - name: Compute tag/release name
+        id: meta
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          [ -z "$TAG" ] && TAG="${{ env.CADDY_VERSION }}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          # Optional release title like "Caddy custom (v2.10.2)"
+          echo "title=Caddy custom (${TAG})" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release (if not exists) & upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.title }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/*.tar.gz
+            dist/*.sha256
         env:
-          PKG_REPO: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
-        run: |
-          FILE="dist/caddy-${{ steps.meta.outputs.branch }}-${{ matrix.osarch }}.tar.gz"
-          SHA="dist/caddy-${{ steps.meta.outputs.branch }}-${{ matrix.osarch }}.sha256"
-
-          # Repository path will look like:
-          # ghcr.io/<owner>/<repo>/<app>-<module>
-          REPO="${PKG_REPO}/${{ env.APP_SLUG }}-${{ steps.meta.outputs.modslug }}"
-
-          # Tag example:
-          # v2.10.2-linux-amd64-main-abc1234
-          TAG="${{ env.CADDY_VERSION }}-${{ matrix.osarch }}-${{ steps.meta.outputs.branch }}-${{ steps.meta.outputs.shortsha }}"
-
-          # Main artifact
-          oras push "${REPO}:${TAG}" \
-            "${FILE}:application/octet-stream" \
-            --annotation "org.opencontainers.image.title=${{ env.APP_SLUG }}" \
-            --annotation "org.opencontainers.image.description=Custom Caddy with ${{ env.CADDY_MODULES }} for ${{ matrix.osarch }}" \
-            --annotation "org.opencontainers.image.version=${{ env.CADDY_VERSION }}" \
-            --annotation "org.opencontainers.image.revision=${{ github.sha }}" \
-            --annotation "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
-            --annotation "caddy.module=${{ env.CADDY_MODULES }}" \
-            --annotation "caddy.osarch=${{ matrix.osarch }}" \
-            --annotation "caddy.branch=${{ steps.meta.outputs.branch }}"
-
-          # Optional: publish checksum as a side artifact
-          oras push "${REPO}:${TAG}-sha256" \
-            "${SHA}:text/plain"
-
-      # (Optional) Also push easy-to-consume rolling tags
-      - name: Push rolling tags (latest per arch & branch)
-        if: ${{ success() }}
-        env:
-          PKG_REPO: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}
-        run: |
-          FILE="dist/caddy-${{ steps.meta.outputs.branch }}-${{ matrix.osarch }}.tar.gz"
-          REPO="${PKG_REPO}/${{ env.APP_SLUG }}-${{ steps.meta.outputs.modslug }}"
-
-          # latest for this branch + arch (e.g., latest-linux-amd64-main)
-          oras push "${REPO}:latest-${{ matrix.osarch }}-${{ steps.meta.outputs.branch }}" \
-            "${FILE}:application/octet-stream" \
-            --annotation "caddy.module=${{ env.CADDY_MODULES }}" \
-            --annotation "caddy.osarch=${{ matrix.osarch }}" \
-            --annotation "caddy.branch=${{ steps.meta.outputs.branch }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
