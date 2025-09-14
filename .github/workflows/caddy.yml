@@ -11,8 +11,6 @@ on:
 
 permissions:
   contents: write        # needed to create/update releases
-  packages: write
-  security-events: write
 
 env:
   APP_SLUG: caddy
@@ -103,9 +101,7 @@ jobs:
         with:
           name: caddy-build-${{ matrix.osarch }}
           path: |
-            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-*.tar.gz
-            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-*.sha256
-            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-*
+            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-*
           if-no-files-found: error
           retention-days: 7
 
