@@ -2,13 +2,17 @@ name: Publish Caddy Binaries to Release
 
 on:
   push:
-    tags:
-      - "v*"            # e.g., v2.10.2
-      - "caddy-v*"      # optional: caddy-v2.10.2
+    branches:
+      - main
+    paths:
+      - '.github/workflows/caddy.yml'
+      - 'files/caddy/**'
   workflow_dispatch:     # manual run support
 
 permissions:
   contents: write        # needed to create/update releases
+  packages: write
+  security-events: write
 
 env:
   APP_SLUG: caddy
@@ -90,12 +94,18 @@ jobs:
           tar -czf "${BIN}.tar.gz" "${BIN}"
           popd >/dev/null
 
+      - name: List build outputs
+        run: |
+          echo "Contents of dist/:"
+          ls -lah dist || true
       - name: Upload artifact (${{ matrix.osarch }})
         uses: actions/upload-artifact@v4
         with:
           name: caddy-build-${{ matrix.osarch }}
           path: |
-            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-* # tar.gz + bin + sha256
+            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-*.tar.gz
+            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-*.sha256
+            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-*
           if-no-files-found: error
           retention-days: 7
 
