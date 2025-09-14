@@ -78,7 +78,7 @@ jobs:
           # final binary name: caddy-<osarch>-<module>-<tag or version>
           VER="${{ steps.meta.outputs.tag }}"
           [ -z "$VER" ] && VER="${{ env.CADDY_VERSION }}"
-          BIN="${{ env.APP_SLUG }}-${{ matrix.osarch }}-${{ steps.meta.outputs.modslug }}-${VER}"
+          BIN="${{ env.APP_SLUG }}-${{ matrix.osarch }}-${VER}"
 
           $(go env GOPATH)/bin/xcaddy build ${{ env.CADDY_VERSION }} \
             --output "dist/${BIN}" \
@@ -118,8 +118,7 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           [ -z "$TAG" ] && TAG="${{ env.CADDY_VERSION }}"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          # Optional release title like "Caddy custom (v2.10.2)"
-          echo "title=Caddy custom (${TAG})" >> "$GITHUB_OUTPUT"
+          echo "title=Caddy ${{ env.CADDY_VERSION }}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release (if not exists) & upload assets
         uses: softprops/action-gh-release@v2
