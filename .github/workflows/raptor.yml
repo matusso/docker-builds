@@ -38,6 +38,30 @@ jobs:
           echo "sha_short=$(git -C raptor rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
           echo "sha_full=$(git -C raptor rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Patch upstream Dockerfile for CI builds
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("raptor/.devcontainer/Dockerfile")
+          text = path.read_text()
+
+          from_old = "FROM mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"
+          from_new = "FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm"
+          env_old = 'ENV PYTHONPATH="/workspaces/raptor:/workspaces/raptor/packages:${PYTHONPATH}"'
+          env_new = 'ARG PYTHONPATH=""\nENV PYTHONPATH="/workspaces/raptor:/workspaces/raptor/packages:${PYTHONPATH}"'
+
+          if from_old not in text:
+              raise SystemExit(f"Expected base image not found: {from_old}")
+          if env_old not in text:
+              raise SystemExit(f"Expected PYTHONPATH env line not found: {env_old}")
+
+          text = text.replace(from_old, from_new, 1)
+          text = text.replace(env_old, env_new, 1)
+
+          path.write_text(text)
+          PY
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
