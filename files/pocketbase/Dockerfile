@@ -1,14 +1,19 @@
 FROM alpine:latest
 
-ARG PB_VERSION=0.25.0
+ARG PB_VERSION=v0.37.2
+ARG TARGETOS=linux
+ARG TARGETARCH
 
 RUN apk add --no-cache \
     unzip \
-    ca-certificates
+    ca-certificates \
+    wget
 
 # download and unzip PocketBase
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
-RUN unzip /tmp/pb.zip -d /pb/
+RUN PB_VERSION_NO_V="${PB_VERSION#v}" \
+    && wget -O /tmp/pb.zip "https://github.com/pocketbase/pocketbase/releases/download/${PB_VERSION}/pocketbase_${PB_VERSION_NO_V}_${TARGETOS}_${TARGETARCH}.zip" \
+    && unzip /tmp/pb.zip -d /pb/ \
+    && rm -f /tmp/pb.zip
 
 # uncomment to copy the local pb_migrations dir into the image
 # COPY ./pb_migrations /pb/pb_migrations

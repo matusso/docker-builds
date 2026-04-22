@@ -1,104 +1,88 @@
-   # docker-builds
+# docker-builds
 
-   ## Security Tools Docker Images
+`docker-builds` is a GitHub Actions driven build repo that publishes ready-to-run container images and a small set of release artifacts for security tooling and adjacent infrastructure.
 
-   This repository automates the process of building and publishing Docker images for various popular security tools.
+The main goal is simple: keep commonly used tools available in `ghcr.io/matusso/*` with reproducible build inputs, current upstream versions, and a place to maintain wrapper Dockerfiles when upstream images are missing or not a good fit.
 
-   ## About
+## What This Repository Publishes
 
-   This project simplifies the deployment of essential security tools by containerizing them. Using these Docker images, you can quickly run tools without worrying about installation dependencies or conflicts on your host system.
+- Multi-architecture container images to GitHub Container Registry under `ghcr.io/matusso/<image-name>`.
+- Versioned image tags that usually mirror upstream releases, plus a `latest` tag.
+- Security and quality automation through GitHub Actions, Snyk image scans, and SonarCloud scans on selected projects.
+- A separate GitHub Release workflow for a custom Caddy binary with the Cloudflare DNS module.
 
-   The following security tools are included in this repository:
+## Published Image Catalog
 
-   1. **[binwalk](https://github.com/ReFirmLabs/binwalk)**  
-      - A tool for analyzing binary files for embedded files and executable code.  
-      - Useful for reverse engineering firmware and binary analysis.
-      - [![ghcr.io/matusso/binwalk](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/binwalk.yml)
+| Image | Upstream project | Current upstream version | Notes |
+| --- | --- | --- | --- |
+| `binwalk` | [ReFirmLabs/binwalk](https://github.com/ReFirmLabs/binwalk) | `v3.1.0` | Firmware and binary analysis toolkit. Built from the upstream repository and published as a multi-arch image. |
+| `dirsearch` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | `v0.4.3` | Web path and file brute-forcing utility. Built from the upstream repository and published as a multi-arch image. |
+| `ghauri` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | `1.4.3` | SQL injection detection and exploitation tool. Built with a local wrapper Dockerfile that clones the tagged upstream release. |
+| `kiterunner` | [assetnote/kiterunner](https://github.com/assetnote/kiterunner) | `v1.0.2` | High-speed content discovery and API route enumeration tool. Built locally from source and published as a multi-arch image. |
+| `metasploit-framework` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | `6.4.128` | Full Metasploit Framework image built from the upstream repository and published as a multi-arch image. |
+| `mvt` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | `v2.7.0` | Mobile Verification Toolkit CLI package. The image installs the pinned PyPI package and defaults to a shell because the toolkit exposes multiple commands. |
+| `pocketbase` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | `v0.37.2` | PocketBase binary image for running the standalone backend service. The image downloads the correct release artifact for the target architecture. |
+| `raptor` | [gadievron/raptor](https://github.com/gadievron/raptor) | `main` | RAPTOR security research framework devcontainer image. It tracks upstream `main` and publishes `latest` plus `sha-<commit>` tags. Currently `linux/amd64` only. |
+| `routersploit` | [threat9/routersploit](https://github.com/threat9/routersploit) | `v3.4.7` | Exploitation framework focused on embedded devices and router targets. Built with a local wrapper Dockerfile from the tagged upstream source. |
+| `wafw00f` | [EnableSecurity/wafw00f](https://github.com/EnableSecurity/wafw00f) | `v2.4.2` | Web application firewall fingerprinting tool. Built with a local wrapper Dockerfile from the tagged upstream source. |
 
-   2. **[dirsearch](https://github.com/maurosoria/dirsearch)**  
-      - A simple command-line tool designed to brute-force directories and files in web servers.  
-      - Helps uncover hidden directories and files for security assessments.
-      - [![ghcr.io/matusso/dirsearch](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/dirsearch.yml)
+## Additional Release Artifact
 
-   3. **[ghauri](https://github.com/r0oth3x49/ghauri)**  
-      - A fast and powerful SQL injection detection and exploitation tool.  
-      - Ideal for penetration testing web applications.
-      - [![ghcr.io/matusso/ghauri](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ghauri.yml)
+- `caddy`: a GitHub Release workflow publishes a custom [Caddy](https://github.com/caddyserver/caddy) binary with `github.com/caddy-dns/cloudflare` compiled in. It is currently pinned to `v2.11.2`.
 
-   4. **[metasploit-framework](https://github.com/rapid7/metasploit-framework)**  
-      - A comprehensive penetration testing framework.  
-      - Features exploits, payloads, and tools for security testing and research.
-      - [![ghcr.io/matusso/metasploit-framework](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/metasploit-framework.yml)
-        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Ametasploit-framework&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Ametasploit-framework)
+## Tagging Policy
 
-   5. **[mvt-project](https://github.com/mvt-project/mvt)**  
-      - Mobile Verification Toolkit (MVT) for analyzing mobile devices.  
-      - Assists in detecting traces of known surveillance spyware.
-      - [![ghcr.io/matusso/mvt](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/mvt-project.yml)
-        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Amvt-project&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Amvt-project)
+- Most images publish `latest` and an upstream version tag such as `v0.37.2` or `1.4.3`.
+- Images that are built per architecture first, such as `binwalk`, `kiterunner`, and `metasploit-framework`, also publish `-amd64` and `-arm64` tags before a multi-arch manifest is assembled.
+- `raptor` is commit-tracked rather than release-tracked and publishes `latest` plus `sha-<upstream-commit>`.
 
-   6. **[kiterunner](https://github.com/assetnote/kiterunner)**  
-      - Kiterunner is a tool that is capable of not only performing traditional content discovery at lightning fast speeds, but also bruteforcing routes/endpoints in modern applications..  
-      - [![ghcr.io/matusso/kiterunner](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/kiterunner.yml)
-        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Akiterunner&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Akiterunner)
+## How The Images Are Built
 
-   7. **[wafw00f](https://github.com/EnableSecurity/wafw00f)**  
-      - WAFW00F can detect a number of firewalls  
-      - [![ghcr.io/matusso/wafw00f](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/wafw00f.yml)
+- Some images build directly from the upstream repository or upstream Dockerfile.
+- Some images use curated Dockerfiles in `files/` when the upstream project does not provide a suitable container image.
+- Version pins live in the workflow files so rebuilds stay reproducible and easier to audit.
+- Workflows are triggered on changes to the relevant workflow or local Docker context. `raptor` also has a scheduled refresh because it tracks upstream `main`.
 
-   8. **[routersploit](https://github.com/threat9/routersploit)**  
-      - The RouterSploit Framework is an open-source exploitation framework dedicated to embedded devices.  
-      - [![ghcr.io/matusso/routersploit](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/routersploit.yml)
-        [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=docker-builds%3Aroutersploit&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=docker-builds%3Aroutersploit)
+## Using The Images
 
-   ## Multi-Architecture Support
+Pull a specific image:
 
-   All Docker images are built and published for the following architectures:
-   - **amd64**: For x86_64 systems.
-   - **arm64**: For ARM-based systems, including Apple M1/M2 and Raspberry Pi.
+```bash
+docker pull ghcr.io/matusso/<image-name>:<tag>
+```
 
-   ## SonarCloud Scanning
+Run it:
 
-   This repository integrates with SonarCloud to maintain high code quality and security standards.
-   Each pull request and push to the main branch is automatically analyzed using SonarCloud.
-   The analysis covers:
-      - Code smells
-      - Security hotspots
-      - Bugs
-      - Maintainability
+```bash
+docker run --rm -it ghcr.io/matusso/<image-name>:<tag> [tool-arguments]
+```
 
-   ## Why Use This Project?
+Examples:
 
-   - **Consistency:** Pre-built Docker images ensure that the tools work as intended across various environments.  
-   - **Convenience:** No need to manually install or configure dependencies for each tool.  
-   - **Automation:** GitHub Actions automatically build and publish updated Docker images when changes are made to the repository.  
+```bash
+docker run --rm -it ghcr.io/matusso/dirsearch:v0.4.3 -u https://example.com
+docker run --rm -it ghcr.io/matusso/wafw00f:v2.4.2 https://example.com
+docker run --rm -it --entrypoint sh ghcr.io/matusso/raptor:latest
+```
 
-   ## How to Use
+Notes:
 
-   1. Pull the desired tool's Docker image:  
-   ```bash
-   docker pull ghcr.io/matusso/<tool-name>
-   ```
+- `pocketbase` exposes port `8080` and starts the PocketBase server by default.
+- `mvt` installs multiple CLI entrypoints, so the container defaults to `sh` rather than forcing a single command.
+- `raptor` is a development environment style image, not a minimal single-purpose runtime image.
 
-   2. Run the tool:
-   ```bash
-   docker run --rm -it ghcr.io/matusso/<tool-name> [tool-arguments]  
-   ```
+## Quality And Security Checks
 
-   #### Example
+- Container builds are executed in GitHub Actions.
+- Selected images are scanned with Snyk and the results are uploaded to GitHub Code Scanning as SARIF.
+- Selected upstream source trees are scanned with SonarCloud for maintainability and code quality visibility.
 
-   To use dirsearch:
+## Contributing
 
-   ```
-   docker pull ghcr.io/matusso/dirsearch  
-   docker run --rm -it ghcr.io/matusso/dirsearch -u https://example.com  
-   ```
+- Add or update a Dockerfile under `files/` when a local wrapper image is needed.
+- Update the corresponding workflow pin when you bump an upstream version.
+- Open a pull request with the image change and a brief note about the upstream version you are targeting.
 
-   #### Contributions
+## License
 
-   Contributions to add more tools or improve the existing ones are welcome. Please create a pull request or open an issue for discussion.
-
-
-   #### License
-
-   This repository is distributed under the MIT License. Please check the individual projects for their respective licenses.
+This repository contains build automation and wrapper Dockerfiles. Each packaged upstream project keeps its own license terms. Check the upstream repository for the tool you intend to use.

@@ -14,9 +14,9 @@ permissions:
 
 env:
   APP_SLUG: caddy
-  CADDY_VERSION: "v2.10.2"                    # Caddy version passed to xcaddy
+  CADDY_VERSION: "v2.11.2"                    # Caddy version passed to xcaddy
   CADDY_MODULES: github.com/caddy-dns/cloudflare
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.25.0"
 
 concurrency:
   group: caddy-release-${{ github.ref }}

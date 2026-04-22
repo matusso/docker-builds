@@ -13,7 +13,7 @@ permissions:
   security-events: write
 
 env:
-  RELEASE_VERSION: "6.4.84"
+  RELEASE_VERSION: "6.4.128"
 
 jobs:
   build-and-push-amd64:
