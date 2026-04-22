@@ -48,16 +48,45 @@ jobs:
 
           from_old = "FROM mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"
           from_new = "FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm"
+          gconf_old = "    libgconf-2-4 \\\n"
           env_old = 'ENV PYTHONPATH="/workspaces/raptor:/workspaces/raptor/packages:${PYTHONPATH}"'
           env_new = 'ARG PYTHONPATH=""\nENV PYTHONPATH="/workspaces/raptor:/workspaces/raptor/packages:${PYTHONPATH}"'
+          codeql_old = (
+              "ARG CODEQL_VERSION=2.15.5\n"
+              "RUN mkdir -p /opt/codeql \\\n"
+              '    && curl -L "https://github.com/github/codeql-cli-binaries/releases/download/v${CODEQL_VERSION}/codeql-linux64.zip" -o /tmp/codeql.zip \\\n'
+              "    && unzip /tmp/codeql.zip -d /opt \\\n"
+              "    && rm /tmp/codeql.zip \\\n"
+              "    && ln -s /opt/codeql/codeql /usr/local/bin/codeql"
+          )
+          codeql_new = (
+              "ARG CODEQL_VERSION=2.15.5\n"
+              "ARG TARGETARCH\n"
+              "RUN mkdir -p /opt/codeql \\\n"
+              '    && if [ "$TARGETARCH" = "amd64" ]; then \\\n'
+              '         curl -L "https://github.com/github/codeql-cli-binaries/releases/download/v${CODEQL_VERSION}/codeql-linux64.zip" -o /tmp/codeql.zip \\\n'
+              "         && unzip /tmp/codeql.zip -d /opt \\\n"
+              "         && rm /tmp/codeql.zip \\\n"
+              "         && ln -s /opt/codeql/codeql /usr/local/bin/codeql; \\\n"
+              "       else \\\n"
+              "         printf '#!/bin/sh\\necho \"CodeQL CLI is not bundled on %s; upstream releases only publish linux64 binaries.\" >&2\\nexit 1\\n' \"$TARGETARCH\" > /usr/local/bin/codeql \\\n"
+              "         && chmod +x /usr/local/bin/codeql; \\\n"
+              "       fi"
+          )
 
           if from_old not in text:
               raise SystemExit(f"Expected base image not found: {from_old}")
+          if gconf_old not in text:
+              raise SystemExit(f"Expected obsolete package line not found: {gconf_old!r}")
           if env_old not in text:
               raise SystemExit(f"Expected PYTHONPATH env line not found: {env_old}")
+          if codeql_old not in text:
+              raise SystemExit("Expected CodeQL install block not found")
 
           text = text.replace(from_old, from_new, 1)
+          text = text.replace(gconf_old, "", 1)
           text = text.replace(env_old, env_new, 1)
+          text = text.replace(codeql_old, codeql_new, 1)
 
           path.write_text(text)
           PY
@@ -72,13 +101,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Build and push RAPTOR image
         uses: docker/build-push-action@v6
         with:
           context: raptor
           file: raptor/.devcontainer/Dockerfile
-          # Upstream devcontainer bundles linux64 CodeQL and documents rr as x86_64-only.
-          platforms: linux/amd64
+          # arm64/v8 skips the bundled CodeQL CLI because upstream release assets are linux64-only.
+          platforms: linux/amd64,linux/arm64/v8
           pull: true
           push: true
           tags: |

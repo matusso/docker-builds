@@ -22,7 +22,7 @@ The main goal is simple: keep commonly used tools available in `ghcr.io/matusso/
 | `metasploit-framework` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | `6.4.128` | Full Metasploit Framework image built from the upstream repository and published as a multi-arch image. |
 | `mvt` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | `v2.7.0` | Mobile Verification Toolkit CLI package. The image installs the pinned PyPI package and defaults to a shell because the toolkit exposes multiple commands. |
 | `pocketbase` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | `v0.37.2` | PocketBase binary image for running the standalone backend service. The image downloads the correct release artifact for the target architecture. |
-| `raptor` | [gadievron/raptor](https://github.com/gadievron/raptor) | `main` | RAPTOR security research framework devcontainer image. It tracks upstream `main` and publishes `latest` plus `sha-<commit>` tags. Currently `linux/amd64` only. |
+| `raptor` | [gadievron/raptor](https://github.com/gadievron/raptor) | `main` | RAPTOR security research framework devcontainer image. It tracks upstream `main` and publishes `latest` plus `sha-<commit>` tags for `linux/amd64` and `linux/arm64/v8`. The bundled CodeQL CLI remains amd64-only because upstream release assets are linux64-only. |
 | `routersploit` | [threat9/routersploit](https://github.com/threat9/routersploit) | `v3.4.7` | Exploitation framework focused on embedded devices and router targets. Built with a local wrapper Dockerfile from the tagged upstream source. |
 | `wafw00f` | [EnableSecurity/wafw00f](https://github.com/EnableSecurity/wafw00f) | `v2.4.2` | Web application firewall fingerprinting tool. Built with a local wrapper Dockerfile from the tagged upstream source. |
 
@@ -70,6 +70,7 @@ Notes:
 - `pocketbase` exposes port `8080` and starts the PocketBase server by default.
 - `mvt` installs multiple CLI entrypoints, so the container defaults to `sh` rather than forcing a single command.
 - `raptor` is a development environment style image, not a minimal single-purpose runtime image.
+- On `linux/arm64/v8`, the `raptor` image skips the bundled CodeQL CLI because GitHub’s CodeQL CLI release assets are published as `linux64` only.
 
 ## Quality And Security Checks
 
