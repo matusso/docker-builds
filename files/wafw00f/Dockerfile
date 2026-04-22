@@ -10,11 +10,9 @@ RUN apk update && apk add --no-cache git
 WORKDIR /app
 
 # Clone the wafw00f repository
-RUN git clone --branch "$RELEASE_VERSION" https://github.com/EnableSecurity/wafw00f .
+RUN git clone --depth=1 --branch "$RELEASE_VERSION" https://github.com/EnableSecurity/wafw00f .
 
-# Install any needed packages specified in requirements.txt
-RUN pip install setuptools
-
-RUN python setup.py install
+# Install wafw00f from the upstream pyproject-based package.
+RUN pip install --no-cache-dir .
 
 ENTRYPOINT [ "wafw00f" ]
