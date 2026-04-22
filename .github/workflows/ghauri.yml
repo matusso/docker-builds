@@ -15,7 +15,7 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.13"
-  RELEASE_VERSION: "1.4.1"
+  RELEASE_VERSION: "1.4.3"
 
 jobs:
   build-and-push:
@@ -48,7 +48,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker buildx build --push --build-context python=docker-image://python:${{ env.PYTHON_VERSION }}-alpine \
+          docker buildx build --push \
             --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
             --tag ghcr.io/${{ github.repository_owner }}/ghauri:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/ghauri:latest \

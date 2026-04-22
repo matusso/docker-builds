@@ -13,6 +13,9 @@ permissions:
   packages: write
   security-events: write
 
+env:
+  RELEASE_VERSION: "v3.4.7"
+
 jobs:
   build-and-push:
     runs-on: ${{ matrix.os }}
@@ -21,12 +24,8 @@ jobs:
         os: [ubuntu-latest]
 
     steps:        
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: snyk/actions/setup@master
-
-      - name: Set release version
-        id: set_version
-        run: echo "RELEASE_VERSION=3.4.6" >> $GITHUB_ENV
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -49,6 +48,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker buildx build --push \
+            --build-arg "RELEASE_VERSION=${{ env.RELEASE_VERSION }}" \
             --tag ghcr.io/${{ github.repository_owner }}/routersploit:${{ env.RELEASE_VERSION }} \
             --tag ghcr.io/${{ github.repository_owner }}/routersploit:latest \
             --platform linux/amd64,linux/arm64 ./files/routersploit

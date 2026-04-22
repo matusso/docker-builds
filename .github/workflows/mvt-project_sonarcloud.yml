@@ -20,7 +20,7 @@ jobs:
         with:
           repository: mvt-project/mvt
           path: mvt  # Optional: Clone into a specific directory
-          ref: 'v2.5.4'
+          ref: 'v2.7.0'
 
       # Set up Python 3.13
       - name: Set up Python
