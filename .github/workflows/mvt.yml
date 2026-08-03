@@ -1,0 +1,59 @@
+# MVT (Mobile Verification Toolkit) — forensic analysis of mobile devices.
+# Upstream: https://github.com/mvt-project/mvt
+---
+name: mvt
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/mvt.yml
+      - .github/workflows/_build-image.yml
+      - files/mvt/**
+  pull_request:
+    paths:
+      - .github/workflows/mvt.yml
+      - .github/workflows/_build-image.yml
+      - files/mvt/**
+  workflow_dispatch:
+
+concurrency:
+  group: mvt-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Image
+    uses: ./.github/workflows/_build-image.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+      id-token: write
+      attestations: write
+    with:
+      image: mvt
+      version: v2026.7.29
+      context: files/mvt
+      description: Mobile Verification Toolkit — forensic analysis of Android and iOS devices
+      licenses: LicenseRef-MVT-1.1
+      push: ${{ github.event_name != 'pull_request' }}
+      # MVT exposes two entrypoints and the image defaults to a shell, so both
+      # CLIs are exercised explicitly.
+      smoke-command: >-
+        docker run --rm --entrypoint mvt-ios "$IMAGE" version &&
+        docker run --rm --entrypoint mvt-android "$IMAGE" version
+
+  sonar:
+    name: Quality
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/_sonar-scan.yml
+    permissions:
+      contents: read
+    with:
+      project-key: docker-builds:mvt-project
+      project-name: mvt-project
+      upstream-repo: mvt-project/mvt
+      upstream-ref: v2026.7.29
+      python-version: "3.14"
+    secrets: inherit

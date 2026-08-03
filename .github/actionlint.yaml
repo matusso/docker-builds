@@ -1,0 +1,15 @@
+# actionlint configuration.
+---
+self-hosted-runner:
+  # GitHub-hosted arm64 runners. Older actionlint releases do not carry these in
+  # their built-in label list.
+  labels:
+    - ubuntu-24.04-arm
+    - ubuntu-22.04-arm
+
+paths:
+  .github/workflows/_build-image.yml:
+    ignore:
+      # The build matrix is generated at runtime by the resolve job, so
+      # actionlint cannot infer the shape of the matrix context statically.
+      - 'property "(platform|runner|slug)" is not defined in object type \{\}'
