@@ -1,4 +1,4 @@
 # Development and CI tooling. Pinned so a local run matches CI exactly.
-pytest==9.0.1
+pytest==9.0.3
 ruff==0.14.4
 yamllint==1.37.1
