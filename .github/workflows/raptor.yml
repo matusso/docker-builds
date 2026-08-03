@@ -1,127 +1,81 @@
-name: gadievron/raptor
+# RAPTOR — AI offensive/defensive security research framework devcontainer.
+# Upstream: https://github.com/gadievron/raptor (built from upstream's devcontainer Dockerfile)
+#
+# RAPTOR is commit-tracked rather than release-tracked. The upstream HEAD is
+# resolved to an immutable SHA first so that both architectures build the exact
+# same source, and so the published tag records what was built.
+---
+name: raptor
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - ".github/workflows/raptor.yml"
+      - .github/workflows/raptor.yml
+      - .github/workflows/_build-image.yml
+      - scripts/patch_raptor_dockerfile.py
+  pull_request:
+    paths:
+      - .github/workflows/raptor.yml
+      - .github/workflows/_build-image.yml
+      - scripts/patch_raptor_dockerfile.py
   schedule:
     - cron: "17 3 * * 0"
-
-permissions:
-  contents: read
-  packages: write
+  workflow_dispatch:
 
 concurrency:
-  group: raptor-image
+  group: raptor-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-push:
+  resolve:
+    name: Resolve upstream commit
     runs-on: ubuntu-latest
-
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.head.outputs.sha }}
+      sha_short: ${{ steps.head.outputs.sha_short }}
     steps:
-      - name: Checkout RAPTOR source
-        uses: actions/checkout@v4
-        with:
-          repository: gadievron/raptor
-          ref: main
-          path: raptor
-          submodules: recursive
-          fetch-depth: 1
-
-      - name: Resolve source metadata
-        id: source
+      - name: Resolve gadievron/raptor@main
+        id: head
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "sha_short=$(git -C raptor rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
-          echo "sha_full=$(git -C raptor rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          sha="$(gh api repos/gadievron/raptor/commits/main --jq '.sha')"
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "sha_short=${sha:0:12}" >> "$GITHUB_OUTPUT"
+          echo "Building gadievron/raptor@${sha}" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Patch upstream Dockerfile for CI builds
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("raptor/.devcontainer/Dockerfile")
-          text = path.read_text()
-
-          from_old = "FROM mcr.microsoft.com/devcontainers/python:1-3.12-bookworm"
-          from_new = "FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm"
-          gconf_old = "    libgconf-2-4 \\\n"
-          env_old = 'ENV PYTHONPATH="/workspaces/raptor:/workspaces/raptor/packages:${PYTHONPATH}"'
-          env_new = 'ARG PYTHONPATH=""\nENV PYTHONPATH="/workspaces/raptor:/workspaces/raptor/packages:${PYTHONPATH}"'
-          codeql_old = (
-              "ARG CODEQL_VERSION=2.15.5\n"
-              "RUN mkdir -p /opt/codeql \\\n"
-              '    && curl -L "https://github.com/github/codeql-cli-binaries/releases/download/v${CODEQL_VERSION}/codeql-linux64.zip" -o /tmp/codeql.zip \\\n'
-              "    && unzip /tmp/codeql.zip -d /opt \\\n"
-              "    && rm /tmp/codeql.zip \\\n"
-              "    && ln -s /opt/codeql/codeql /usr/local/bin/codeql"
-          )
-          codeql_new = (
-              "ARG CODEQL_VERSION=2.15.5\n"
-              "ARG TARGETARCH\n"
-              "RUN mkdir -p /opt/codeql \\\n"
-              '    && if [ "$TARGETARCH" = "amd64" ]; then \\\n'
-              '         curl -L "https://github.com/github/codeql-cli-binaries/releases/download/v${CODEQL_VERSION}/codeql-linux64.zip" -o /tmp/codeql.zip \\\n'
-              "         && unzip /tmp/codeql.zip -d /opt \\\n"
-              "         && rm /tmp/codeql.zip \\\n"
-              "         && ln -s /opt/codeql/codeql /usr/local/bin/codeql; \\\n"
-              "       else \\\n"
-              "         printf '#!/bin/sh\\necho \"CodeQL CLI is not bundled on %s; upstream releases only publish linux64 binaries.\" >&2\\nexit 1\\n' \"$TARGETARCH\" > /usr/local/bin/codeql \\\n"
-              "         && chmod +x /usr/local/bin/codeql; \\\n"
-              "       fi"
-          )
-
-          if from_old not in text:
-              raise SystemExit(f"Expected base image not found: {from_old}")
-          if gconf_old not in text:
-              raise SystemExit(f"Expected obsolete package line not found: {gconf_old!r}")
-          if env_old not in text:
-              raise SystemExit(f"Expected PYTHONPATH env line not found: {env_old}")
-          if codeql_old not in text:
-              raise SystemExit("Expected CodeQL install block not found")
-
-          text = text.replace(from_old, from_new, 1)
-          text = text.replace(gconf_old, "", 1)
-          text = text.replace(env_old, env_new, 1)
-          text = text.replace(codeql_old, codeql_new, 1)
-
-          path.write_text(text)
-          PY
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-
-      - name: Build and push RAPTOR image
-        uses: docker/build-push-action@v6
-        with:
-          context: raptor
-          file: raptor/.devcontainer/Dockerfile
-          # arm64/v8 skips the bundled CodeQL CLI because upstream release assets are linux64-only.
-          platforms: linux/amd64,linux/arm64/v8
-          pull: true
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/raptor:latest
-            ghcr.io/${{ github.repository_owner }}/raptor:sha-${{ steps.source.outputs.sha_short }}
-          labels: |
-            org.opencontainers.image.title=raptor
-            org.opencontainers.image.description=RAPTOR devcontainer image built from gadievron/raptor
-            org.opencontainers.image.source=https://github.com/gadievron/raptor
-            org.opencontainers.image.revision=${{ steps.source.outputs.sha_full }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  image:
+    name: Image
+    needs: resolve
+    uses: ./.github/workflows/_build-image.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+      id-token: write
+      attestations: write
+    with:
+      image: raptor
+      version: sha-${{ needs.resolve.outputs.sha_short }}
+      context: upstream/raptor
+      dockerfile: upstream/raptor/.devcontainer/Dockerfile
+      upstream-repo: gadievron/raptor
+      upstream-ref: ${{ needs.resolve.outputs.sha }}
+      upstream-submodules: true
+      description: RAPTOR security research framework devcontainer
+      # Upstream ships a verbatim MIT LICENSE. GitHub's API reports NOASSERTION
+      # for it, which is a detector artefact, not a missing licence.
+      licenses: MIT
+      # The bundled CodeQL CLI is amd64-only; see scripts/patch_raptor_dockerfile.py.
+      platforms: linux/amd64,linux/arm64/v8
+      prepare-command: python3 scripts/patch_raptor_dockerfile.py "$DOCKERFILE"
+      build-timeout-minutes: 150
+      push: ${{ github.event_name != 'pull_request' }}
+      smoke-command: >-
+        docker run --rm --entrypoint bash "$IMAGE"
+        -c 'python3 --version && node --version && test -x /usr/local/bin/codeql'

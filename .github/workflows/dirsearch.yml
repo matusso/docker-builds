@@ -1,81 +1,40 @@
-name: maurosoria/dirsearch
+# dirsearch — web path and file brute-forcing utility.
+# Upstream: https://github.com/maurosoria/dirsearch (built from upstream's Dockerfile)
+---
+name: dirsearch
 
 on:
   push:
-    branches:
-      - main  # Change to your default branch if not main
+    branches: [main]
     paths:
-      - '.github/workflows/dirsearch.yml'
-      - 'files/dirsearch/**'
+      - .github/workflows/dirsearch.yml
+      - .github/workflows/_build-image.yml
+  pull_request:
+    paths:
+      - .github/workflows/dirsearch.yml
+      - .github/workflows/_build-image.yml
+  workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-  security-events: write
+concurrency:
+  group: dirsearch-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-push:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: snyk/actions/setup@master
-
-      - name: Set release version
-        id: set_version
-        run: echo "RELEASE_VERSION=v0.4.3" >> $GITHUB_ENV
-
-      - name: Clone Dirsearch repository at specific version
-        run: |
-          git clone --branch ${{ env.RELEASE_VERSION }} https://github.com/maurosoria/dirsearch.git
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Build and push Docker image
-        run: |
-          docker buildx build --push \
-            --tag ghcr.io/${{ github.repository_owner }}/dirsearch:${{ env.RELEASE_VERSION }} \
-            --tag ghcr.io/${{ github.repository_owner }}/dirsearch:latest \
-            --platform linux/amd64,linux/arm64 ./dirsearch
-
-      - name: Logout from GitHub Container Registry
-        run: docker logout ghcr.io
-
-      - name: Check ghcr.io/${{ github.repository_owner }}/dirsearch:${{ env.RELEASE_VERSION }} image
-        uses: snyk/actions/docker@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ghcr.io/${{ github.repository_owner }}/dirsearch:${{ env.RELEASE_VERSION }}
-          args: --file=./dirsearch/Dockerfile
-          json: true
-      - uses: garethr/snyk-to-sarif@master
-      - uses: actions/upload-artifact@v4
-        with:
-          name: SARIF
-          path: snyk.sarif
-      
-      - name: Upload SARIF Report to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: snyk.sarif
+  image:
+    name: Image
+    uses: ./.github/workflows/_build-image.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+      id-token: write
+      attestations: write
+    with:
+      image: dirsearch
+      version: v0.4.4
+      context: upstream/dirsearch
+      upstream-repo: maurosoria/dirsearch
+      description: Web path and file brute-forcing utility
+      licenses: GPL-2.0-or-later
+      push: ${{ github.event_name != 'pull_request' }}
+      smoke-command: docker run --rm "$IMAGE" --help | grep -qi 'usage'

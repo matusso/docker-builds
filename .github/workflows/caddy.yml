@@ -1,31 +1,44 @@
-name: Publish Caddy Binaries to Release
+# Caddy — custom build with the Cloudflare DNS module compiled in.
+# Upstream: https://github.com/caddyserver/caddy
+#
+# Published as GitHub Release assets rather than a container image, because the
+# artifact people want here is the binary itself.
+#
+# The release tag is derived from CADDY_VERSION. It used to come from
+# GITHUB_REF_NAME, which is the branch name on a branch push — that is how the
+# existing release ended up tagged `main`.
+---
+name: caddy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - '.github/workflows/caddy.yml'
-      - 'files/caddy/**'
-  workflow_dispatch:     # manual run support
+      - .github/workflows/caddy.yml
+  pull_request:
+    paths:
+      - .github/workflows/caddy.yml
+  workflow_dispatch:
 
 permissions:
-  contents: write        # needed to create/update releases
+  contents: read
+
+concurrency:
+  group: caddy-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   APP_SLUG: caddy
-  CADDY_VERSION: "v2.11.2"                    # Caddy version passed to xcaddy
+  CADDY_VERSION: "v2.11.4"
   CADDY_MODULES: github.com/caddy-dns/cloudflare
-  GO_VERSION: "1.25.0"
-
-concurrency:
-  group: caddy-release-${{ github.ref }}
-  cancel-in-progress: false
+  XCADDY_VERSION: "v0.4.6"
+  GO_VERSION: "1.26.5"
 
 jobs:
   build:
     name: Build ${{ matrix.osarch }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -38,104 +51,109 @@ jobs:
             osarch: linux-arm64
           - goos: linux
             goarch: arm
-            goarm: 7
+            goarm: "7"
             osarch: linux-armv7
-
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Cache Go build
-        uses: actions/cache@v4
+      - name: Cache Go modules
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+          key: caddy-${{ runner.os }}-go${{ env.GO_VERSION }}-xcaddy${{ env.XCADDY_VERSION }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ env.GO_VERSION }}-
+            caddy-${{ runner.os }}-go${{ env.GO_VERSION }}-
 
-      - name: Install xcaddy
-        run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+      - name: Install xcaddy ${{ env.XCADDY_VERSION }}
+        run: go install "github.com/caddyserver/xcaddy/cmd/xcaddy@${XCADDY_VERSION}"
 
-      - name: Compute naming bits
-        id: meta
-        run: |
-          # Use the tag name if present (on tag push). On workflow_dispatch, use ref name.
-          TAG="${GITHUB_REF_NAME}"
-          MOD_SLUG="$(basename "${{ env.CADDY_MODULES }}")"   # e.g. cloudflare
-          echo "tag=${TAG}"       >> "$GITHUB_OUTPUT"
-          echo "modslug=${MOD_SLUG}" >> "$GITHUB_OUTPUT"
-
-      - name: Build xcaddy (${{ matrix.osarch }})
+      - name: Build ${{ matrix.osarch }}
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           GOARM: ${{ matrix.goarm }}
+          OSARCH: ${{ matrix.osarch }}
         run: |
+          set -euo pipefail
           mkdir -p dist
-          # final binary name: caddy-<osarch>-<module>-<tag or version>
-          VER="${{ steps.meta.outputs.tag }}"
-          [ -z "$VER" ] && VER="${{ env.CADDY_VERSION }}"
-          BIN="${{ env.APP_SLUG }}-${{ matrix.osarch }}-${VER}"
+          binary="${APP_SLUG}-${OSARCH}-${CADDY_VERSION}"
 
-          $(go env GOPATH)/bin/xcaddy build ${{ env.CADDY_VERSION }} \
-            --output "dist/${BIN}" \
-            --with ${{ env.CADDY_MODULES }}
+          "$(go env GOPATH)/bin/xcaddy" build "${CADDY_VERSION}" \
+            --output "dist/${binary}" \
+            --with "${CADDY_MODULES}"
 
-          chmod +x "dist/${BIN}"
-          pushd dist >/dev/null
-          sha256sum "${BIN}" > "${BIN}.sha256"
-          tar -czf "${BIN}.tar.gz" "${BIN}"
-          popd >/dev/null
+          chmod +x "dist/${binary}"
+          cd dist
+          sha256sum "${binary}" > "${binary}.sha256"
+          tar -czf "${binary}.tar.gz" "${binary}"
+          rm -f "${binary}"
+          ls -lh
 
-      - name: List build outputs
-        run: |
-          echo "Contents of dist/:"
-          ls -lah dist || true
-      - name: Upload artifact (${{ matrix.osarch }})
-        uses: actions/upload-artifact@v4
+      - name: Upload ${{ matrix.osarch }}
+        uses: actions/upload-artifact@v7
         with:
-          name: caddy-build-${{ matrix.osarch }}
-          path: |
-            dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-*
+          name: caddy-${{ matrix.osarch }}
+          path: dist/${{ env.APP_SLUG }}-${{ matrix.osarch }}-*
           if-no-files-found: error
           retention-days: 7
 
   release:
-    name: Create/Update Release & Upload Assets
-    runs-on: ubuntu-latest
+    name: Publish release
     needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
         with:
-          path: ./dist
+          pattern: caddy-linux-*
+          path: dist
           merge-multiple: true
 
-      - name: Compute tag/release name
-        id: meta
+      - name: Collect checksums
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          [ -z "$TAG" ] && TAG="${{ env.CADDY_VERSION }}"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "title=Caddy ${{ env.CADDY_VERSION }}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          cd dist
+          cat ./*.sha256 > SHA256SUMS
+          {
+            echo "### Caddy ${CADDY_VERSION} artifacts"
+            echo '```'
+            cat SHA256SUMS
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Create GitHub Release (if not exists) & upload assets
-        uses: softprops/action-gh-release@v2
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4
         with:
-          tag_name: ${{ steps.meta.outputs.tag }}
-          name: ${{ steps.meta.outputs.title }}
+          subject-path: dist/*.tar.gz
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.APP_SLUG }}-${{ env.CADDY_VERSION }}
+          name: Caddy ${{ env.CADDY_VERSION }}
+          body: |
+            Custom Caddy ${{ env.CADDY_VERSION }} build with `${{ env.CADDY_MODULES }}` compiled in.
+
+            Built with Go ${{ env.GO_VERSION }} and xcaddy ${{ env.XCADDY_VERSION }}.
+
+            Verify a download against `SHA256SUMS`:
+
+            ```bash
+            sha256sum -c SHA256SUMS --ignore-missing
+            ```
           draft: false
           prerelease: false
-          generate_release_notes: true
           files: |
             dist/*.tar.gz
             dist/*.sha256
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            dist/SHA256SUMS

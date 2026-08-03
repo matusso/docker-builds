@@ -1,0 +1,11 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: Vulnerability in a published image
+    url: https://github.com/matusso/docker-builds/security/advisories/new
+    about: Report privately through GitHub Security Advisories. Please do not open a public issue.
+  - name: Bug in the packaged tool itself
+    url: https://github.com/matusso/docker-builds#image-catalog
+    about: >-
+      If the tool misbehaves but the image builds and starts correctly, report it to the
+      upstream project linked in the catalog.

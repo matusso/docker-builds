@@ -1,0 +1,16 @@
+# Upstream source trees checked out by the build workflows.
+/upstream/
+
+# Build output
+/dist/
+*.sarif
+
+# Local tooling
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# OS noise
+.DS_Store
+Thumbs.db

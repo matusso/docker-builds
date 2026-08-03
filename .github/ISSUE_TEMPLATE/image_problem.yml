@@ -1,0 +1,53 @@
+---
+name: Image problem
+description: An image fails to build, fails to start, or behaves differently per architecture.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        For a vulnerability, use
+        [Security Advisories](https://github.com/matusso/docker-builds/security/advisories/new)
+        instead. For a bug in the tool itself, report it upstream.
+
+  - type: input
+    id: image
+    attributes:
+      label: Image and tag
+      placeholder: ghcr.io/matusso/wafw00f:v2.4.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Architecture
+      options:
+        - linux/amd64
+        - linux/arm64
+        - both
+        - not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The exact command you ran.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      render: shell

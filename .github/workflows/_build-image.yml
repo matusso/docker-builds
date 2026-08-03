@@ -1,0 +1,462 @@
+# Reusable image pipeline shared by every published container image.
+#
+#   resolve → build (one native runner per architecture, pushed by digest)
+#           → merge  (multi-arch manifest + build provenance attestation)
+#           → scan   (Trivy → SARIF → GitHub code scanning)
+#
+# Each architecture is built on a native runner rather than under QEMU, so no
+# emulation is involved and per-arch images are never published as tags: they
+# are pushed by digest and referenced only by the manifest list.
+---
+name: _build-image
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: Image name published under ghcr.io/<owner>/<image>.
+        required: true
+        type: string
+      version:
+        description: Upstream version. Used as the primary tag and as org.opencontainers.image.version.
+        required: true
+        type: string
+      context:
+        description: Build context, relative to the workspace root.
+        required: true
+        type: string
+      dockerfile:
+        description: Dockerfile path relative to the workspace root. Defaults to <context>/Dockerfile.
+        required: false
+        type: string
+        default: ''
+      platforms:
+        description: Comma-separated target platforms. Each must map to a native runner.
+        required: false
+        type: string
+        default: linux/amd64,linux/arm64
+      build-args:
+        description: >-
+          Newline-separated KEY=VALUE build arguments. Dockerfiles kept in this repo also
+          receive RELEASE_VERSION=<version> automatically; images built from an upstream
+          Dockerfile do not, since upstream does not declare that argument.
+        required: false
+        type: string
+        default: ''
+      description:
+        description: Value for org.opencontainers.image.description.
+        required: false
+        type: string
+        default: ''
+      licenses:
+        description: SPDX expression for org.opencontainers.image.licenses.
+        required: false
+        type: string
+        default: ''
+      upstream-repo:
+        description: owner/repo to check out into <context> before building. Omit for Dockerfiles kept in this repo.
+        required: false
+        type: string
+        default: ''
+      upstream-ref:
+        description: Ref to check out from upstream-repo. Defaults to the version input.
+        required: false
+        type: string
+        default: ''
+      upstream-submodules:
+        description: Check out upstream submodules recursively.
+        required: false
+        type: boolean
+        default: false
+      prepare-command:
+        description: Shell command run after checkout and before the build. Receives $CONTEXT and $DOCKERFILE.
+        required: false
+        type: string
+        default: ''
+      smoke-command:
+        description: >-
+          Shell command that must exit 0 for the build to pass. Receives $IMAGE, set to a
+          pullable reference for the architecture just built. Skipped when empty.
+        required: false
+        type: string
+        default: ''
+      tag-latest:
+        description: Also publish the `latest` tag.
+        required: false
+        type: boolean
+        default: true
+      extra-tags:
+        description: Newline-separated additional docker/metadata-action tag expressions.
+        required: false
+        type: string
+        default: ''
+      push:
+        description: Push to the registry. Set false to build and smoke test without publishing.
+        required: false
+        type: boolean
+        default: true
+      scan:
+        description: Run the Trivy vulnerability scan and upload SARIF.
+        required: false
+        type: boolean
+        default: true
+      scan-severity:
+        description: Severities Trivy reports.
+        required: false
+        type: string
+        default: CRITICAL,HIGH,MEDIUM
+      scan-fail-on:
+        description: >-
+          Severities that fail the scan job. Empty means report-only, which is the default
+          because these images package third-party tooling whose dependency trees we do not control.
+        required: false
+        type: string
+        default: ''
+      build-timeout-minutes:
+        description: Per-architecture build timeout.
+        required: false
+        type: number
+        default: 90
+    outputs:
+      image:
+        description: Fully qualified image name, without a tag.
+        value: ${{ jobs.resolve.outputs.image }}
+      digest:
+        description: Digest of the published multi-arch manifest.
+        value: ${{ jobs.merge.outputs.digest }}
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Normalise inputs and derive the native-runner build matrix.
+  # ---------------------------------------------------------------------------
+  resolve:
+    name: Resolve build matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      image: ${{ steps.plan.outputs.image }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      dockerfile: ${{ steps.plan.outputs.dockerfile }}
+    steps:
+      - name: Plan build
+        id: plan
+        env:
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          IMAGE_NAME: ${{ inputs.image }}
+          PLATFORMS: ${{ inputs.platforms }}
+          CONTEXT: ${{ inputs.context }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+        run: |
+          set -euo pipefail
+
+          # GHCR requires a lowercase namespace.
+          owner="$(printf '%s' "$REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "image=${REGISTRY}/${owner}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
+
+          dockerfile="${DOCKERFILE:-}"
+          if [ -z "$dockerfile" ]; then
+            dockerfile="${CONTEXT%/}/Dockerfile"
+          fi
+          echo "dockerfile=${dockerfile}" >> "$GITHUB_OUTPUT"
+
+          # Map each requested platform onto a native GitHub-hosted runner.
+          matrix='[]'
+          IFS=','
+          for platform in $PLATFORMS; do
+            platform="$(printf '%s' "$platform" | tr -d '[:space:]')"
+            case "$platform" in
+              linux/amd64)          runner=ubuntu-latest    ; slug=amd64 ;;
+              linux/arm64|linux/arm64/v8) runner=ubuntu-24.04-arm ; slug=arm64 ;;
+              *)
+                echo "::error::No native runner is configured for platform '${platform}'." >&2
+                exit 1
+                ;;
+            esac
+            matrix="$(printf '%s' "$matrix" | jq -c \
+              --arg platform "$platform" --arg runner "$runner" --arg slug "$slug" \
+              '. + [{platform: $platform, runner: $runner, slug: $slug}]')"
+          done
+          unset IFS
+
+          if [ "$(printf '%s' "$matrix" | jq 'length')" -eq 0 ]; then
+            echo "::error::The platforms input resolved to an empty matrix." >&2
+            exit 1
+          fi
+
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          printf 'Build matrix: %s\n' "$matrix"
+
+  # ---------------------------------------------------------------------------
+  # One native build per architecture, pushed by digest and smoke tested.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build ${{ matrix.slug }}
+    needs: resolve
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ inputs.build-timeout-minutes }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.resolve.outputs.matrix) }}
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check out ${{ inputs.upstream-repo }}
+        if: inputs.upstream-repo != ''
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ inputs.upstream-repo }}
+          ref: ${{ inputs.upstream-ref != '' && inputs.upstream-ref || inputs.version }}
+          path: ${{ inputs.context }}
+          submodules: ${{ inputs.upstream-submodules && 'recursive' || '' }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Prepare build context
+        if: inputs.prepare-command != ''
+        env:
+          CONTEXT: ${{ inputs.context }}
+          DOCKERFILE: ${{ needs.resolve.outputs.dockerfile }}
+          PREPARE_COMMAND: ${{ inputs.prepare-command }}
+        run: |
+          set -euo pipefail
+          bash -c "$PREPARE_COMMAND"
+
+      - name: Collect image metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ needs.resolve.outputs.image }}
+          labels: |
+            org.opencontainers.image.title=${{ inputs.image }}
+            org.opencontainers.image.version=${{ inputs.version }}
+            ${{ inputs.description != ''
+                && format('org.opencontainers.image.description={0}', inputs.description) || '' }}
+            ${{ inputs.licenses != ''
+                && format('org.opencontainers.image.licenses={0}', inputs.licenses) || '' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to ${{ env.REGISTRY }}
+        if: inputs.push
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build ${{ matrix.platform }}
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ needs.resolve.outputs.dockerfile }}
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            ${{ inputs.upstream-repo == '' && format('RELEASE_VERSION={0}', inputs.version) || '' }}
+            ${{ inputs.build-args }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Published by digest only. Tags are attached to the manifest list in
+          # the merge job, so no per-architecture tags reach the registry.
+          outputs: >-
+            ${{ inputs.push
+                && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true',
+                          needs.resolve.outputs.image)
+                || format('type=docker,name={0}:ci-{1}', needs.resolve.outputs.image, matrix.slug) }}
+          # Attestations are produced for the manifest list in the merge job;
+          # per-architecture ones would not survive the imagetools merge.
+          provenance: false
+          sbom: false
+          cache-from: type=gha,scope=${{ inputs.image }}-${{ matrix.slug }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.image }}-${{ matrix.slug }}
+
+      - name: Smoke test ${{ matrix.platform }}
+        if: inputs.smoke-command != ''
+        env:
+          IMAGE: >-
+            ${{ inputs.push
+                && format('{0}@{1}', needs.resolve.outputs.image, steps.build.outputs.digest)
+                || format('{0}:ci-{1}', needs.resolve.outputs.image, matrix.slug) }}
+          SMOKE_COMMAND: ${{ inputs.smoke-command }}
+        run: |
+          set -euo pipefail
+          echo "Smoke testing ${IMAGE} on $(uname -m)"
+          bash -c "$SMOKE_COMMAND"
+
+      - name: Record digest
+        if: inputs.push
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+
+      - name: Upload digest
+        if: inputs.push
+        uses: actions/upload-artifact@v7
+        with:
+          name: digest-${{ inputs.image }}-${{ matrix.slug }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # Assemble the manifest list and attest it.
+  # ---------------------------------------------------------------------------
+  merge:
+    name: Publish manifest
+    needs: [resolve, build]
+    if: inputs.push
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      digest: ${{ steps.manifest.outputs.digest }}
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v8
+        with:
+          pattern: digest-${{ inputs.image }}-*
+          path: /tmp/digests
+          merge-multiple: true
+
+      - name: Collect image metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ needs.resolve.outputs.image }}
+          flavor: latest=false
+          tags: |
+            type=raw,value=${{ inputs.version }}
+            type=raw,value=latest,enable=${{ inputs.tag-latest }}
+            ${{ inputs.extra-tags }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to ${{ env.REGISTRY }}
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list
+        id: manifest
+        working-directory: /tmp/digests
+        env:
+          IMAGE: ${{ needs.resolve.outputs.image }}
+        run: |
+          set -euo pipefail
+
+          tags="$(jq -cr '.tags | map("--tag " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON")"
+
+          shopt -s nullglob
+          sources=""
+          count=0
+          for digest in *; do
+            sources="${sources} ${IMAGE}@sha256:${digest}"
+            count=$((count + 1))
+          done
+
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No per-architecture digests were downloaded; nothing to merge." >&2
+            exit 1
+          fi
+          echo "Merging ${count} architecture(s)."
+
+          # shellcheck disable=SC2086 # tags and sources are intentionally split.
+          docker buildx imagetools create ${tags} ${sources}
+
+          digest="$(docker buildx imagetools inspect "${IMAGE}:${{ inputs.version }}" \
+            --format '{{json .Manifest}}' | jq -r '.digest')"
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+          echo "Published ${IMAGE}@${digest}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ needs.resolve.outputs.image }}
+          subject-digest: ${{ steps.manifest.outputs.digest }}
+          push-to-registry: true
+
+      - name: Summarise published tags
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2016 # The backticks are literal markdown, not a subshell.
+          {
+            echo "### Published tags"
+            echo
+            printf '%s\n' "$TAGS" | sed 's/^/- `/; s/$/`/'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # Vulnerability scan of the published manifest.
+  # ---------------------------------------------------------------------------
+  scan:
+    name: Scan image
+    needs: [resolve, merge]
+    if: inputs.push && inputs.scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    steps:
+      - name: Log in to ${{ env.REGISTRY }}
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Scan ${{ inputs.image }}
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ needs.resolve.outputs.image }}@${{ needs.merge.outputs.digest }}
+          format: sarif
+          output: trivy.sarif
+          severity: ${{ inputs.scan-severity }}
+          ignore-unfixed: true
+          vuln-type: os,library
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy.sarif
+          category: trivy-image-${{ inputs.image }}
+
+      - name: Enforce severity gate
+        if: inputs.scan-fail-on != ''
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ needs.resolve.outputs.image }}@${{ needs.merge.outputs.digest }}
+          format: table
+          severity: ${{ inputs.scan-fail-on }}
+          ignore-unfixed: true
+          exit-code: '1'
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2

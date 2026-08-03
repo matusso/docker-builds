@@ -1,0 +1,46 @@
+---
+name: New image request
+description: Propose packaging another tool as an image in this repository.
+labels: [enhancement]
+body:
+  - type: input
+    id: upstream
+    attributes:
+      label: Upstream repository
+      placeholder: https://github.com/owner/project
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version to package
+      description: A release tag, or note that the project only has a default branch.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: upstream-image
+    attributes:
+      label: Does upstream already publish an image?
+      options:
+        - "No"
+        - "Yes, but it is single-architecture"
+        - "Yes, but it is stale or unmaintained"
+        - "Yes, and it is fine — explain below why another is useful"
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why package it here
+    validations:
+      required: true
+
+  - type: textarea
+    id: smoke
+    attributes:
+      label: Suggested smoke test
+      description: A command that proves the image works and exits 0.
+      render: shell

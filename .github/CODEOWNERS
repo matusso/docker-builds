@@ -1,0 +1,14 @@
+# Default owner for everything in this repository.
+*                               @matusso
+
+# Shared pipeline and supply-chain configuration: changes here affect every
+# published image, so they always want an explicit review.
+/.github/workflows/_build-image.yml   @matusso
+/.github/workflows/_sonar-scan.yml    @matusso
+/.github/workflows/ci.yml             @matusso
+/.github/dependabot.yml               @matusso
+/scripts/                             @matusso
+/tests/                               @matusso
+/pyproject.toml                       @matusso
+/requirements-dev.txt                 @matusso
+/SECURITY.md                          @matusso

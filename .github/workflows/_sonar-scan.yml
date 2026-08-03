@@ -1,0 +1,76 @@
+# Reusable SonarCloud scan of an upstream source tree.
+#
+# These scans give maintainability visibility into the third-party code we
+# package; they are advisory and never gate a build. The scanner analyses source
+# directly, so no upstream toolchain or dependency installation is required.
+---
+name: _sonar-scan
+
+on:
+  workflow_call:
+    inputs:
+      project-key:
+        description: SonarCloud project key, e.g. docker-builds:wafw00f.
+        required: true
+        type: string
+      project-name:
+        description: SonarCloud project display name.
+        required: true
+        type: string
+      upstream-repo:
+        description: owner/repo of the source tree to analyse.
+        required: true
+        type: string
+      upstream-ref:
+        description: Ref to analyse.
+        required: true
+        type: string
+      organization:
+        description: SonarCloud organization.
+        required: false
+        type: string
+        default: matusso
+      python-version:
+        description: Value for sonar.python.version. Omit for non-Python projects.
+        required: false
+        type: string
+        default: ''
+      extra-args:
+        description: Additional -Dsonar.* arguments, one per line.
+        required: false
+        type: string
+        default: ''
+    secrets:
+      SONAR_TOKEN:
+        required: true
+
+jobs:
+  scan:
+    name: SonarCloud ${{ inputs.project-name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Check out ${{ inputs.upstream-repo }}
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ inputs.upstream-repo }}
+          ref: ${{ inputs.upstream-ref }}
+          path: src
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: SonarCloud scan
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >-
+            -Dsonar.organization=${{ inputs.organization }}
+            -Dsonar.projectKey=${{ inputs.project-key }}
+            -Dsonar.projectName=${{ inputs.project-name }}
+            -Dsonar.sources=src
+            ${{ inputs.python-version != '' && format('-Dsonar.python.version={0}', inputs.python-version) || '' }}
+            ${{ inputs.extra-args }}

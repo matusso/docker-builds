@@ -1,0 +1,21 @@
+---
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+    level: warning
+  # GitHub Actions' `on:` key is parsed by yamllint as the boolean `on`.
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    max-spaces-inside: 1
+  document-start:
+    present: true
+
+ignore: |
+  .github/workflows/*.yml.bak

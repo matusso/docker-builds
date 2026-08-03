@@ -1,0 +1,27 @@
+# hadolint configuration for the Dockerfiles maintained in files/.
+#
+# Only our own Dockerfiles are linted; images built from an upstream Dockerfile
+# are upstream's to style.
+---
+failure-threshold: warning
+
+trustedRegistries:
+  - docker.io
+  - ghcr.io
+  - mcr.microsoft.com
+
+ignored:
+  # DL3018 — "pin versions in apk add".
+  # The reproducibility boundary here is the base image tag (for example
+  # alpine3.24), which is pinned in every Dockerfile. Alpine repositories carry
+  # exactly one version of each package per branch, so an exact apk pin breaks
+  # the build the moment Alpine ships an in-branch security update — which is an
+  # update we want. Trivy scans the resulting image, so unpinned apk packages do
+  # not go unmonitored.
+  - DL3018
+  # DL3013 — "pin versions in pip".
+  # Applies to the build-stage `pip install --upgrade pip setuptools wheel` line.
+  # Upgrading build tooling to current is the intent; every actual application
+  # dependency is pinned (mvt==, telnetlib-313-and-up==) or resolved from a
+  # tagged upstream source tree.
+  - DL3013

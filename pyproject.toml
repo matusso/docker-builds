@@ -1,0 +1,33 @@
+# Tooling configuration only. This repository is build automation, not a Python
+# package, so there is no [project] table and nothing here is published.
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+# scripts/ holds the modules under test; tests/ holds conftest helpers.
+pythonpath = ["scripts", "tests"]
+addopts = "-q --strict-markers --strict-config"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["upstream"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "SIM",  # simplify
+    "RUF",  # ruff-specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import modules made importable by pytest's pythonpath setting.
+"tests/*" = ["E402"]
+# These files embed upstream Dockerfile text as literals that must match
+# byte-for-byte. Wrapping the long lines would stop the patches applying.
+"scripts/patch_raptor_dockerfile.py" = ["E501"]
+"tests/test_raptor_patcher.py" = ["E402", "E501"]

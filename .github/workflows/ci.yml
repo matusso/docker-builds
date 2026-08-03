@@ -1,0 +1,155 @@
+# Repository CI: static analysis of everything in this repo.
+#
+# Fast and required on every pull request. The image builds themselves are
+# verified by each tool's own workflow, which builds and smoke tests without
+# pushing when the event is a pull request.
+---
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dockerfiles:
+    name: Lint Dockerfiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: hadolint
+        uses: hadolint/hadolint-action@v3.4.0
+        with:
+          recursive: true
+          dockerfile: files/*/Dockerfile
+          config: .hadolint.yaml
+
+  workflows:
+    name: Lint workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # actionlint also runs shellcheck over every `run:` block.
+      - name: actionlint
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "${PWD}:/repo" \
+            --workdir /repo \
+            rhysd/actionlint:1.7.12 -color
+
+  yaml:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: yamllint
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --quiet yamllint==1.37.1
+          yamllint --strict --config-file .yamllint.yml .
+
+  scripts:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install tooling
+        run: python -m pip install --disable-pip-version-check --quiet -r requirements-dev.txt
+
+      - name: ruff
+        run: |
+          set -euo pipefail
+          ruff check scripts tests
+          ruff format --check scripts tests
+
+      - name: Byte-compile
+        run: python -m compileall -q scripts tests
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Install tooling
+        run: python -m pip install --disable-pip-version-check --quiet -r requirements-dev.txt
+
+      # Asserts the repository's declared state: that Dockerfiles follow one
+      # template, that workflows keep their supply-chain guarantees, that the
+      # RAPTOR patcher behaves, and that version pins agree with the README.
+      - name: pytest
+        run: pytest -rs
+
+      # Same checks, via the dependency-free entry point people run locally.
+      - name: Catalog consistency
+        run: python3 scripts/check_catalog.py
+
+  config-scan:
+    name: Scan Dockerfile config
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Trivy misconfiguration scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: files
+          format: sarif
+          output: trivy-config.sarif
+          severity: CRITICAL,HIGH,MEDIUM
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+
+      - name: Upload SARIF to code scanning
+        if: always() && hashFiles('trivy-config.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-config.sarif
+          category: trivy-config-dockerfiles
