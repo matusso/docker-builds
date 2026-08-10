@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 # build — clone the tagged release, install it into /opt/venv
 # ---------------------------------------------------------------------------
-FROM python:3.14.6-alpine3.24 AS build
+FROM python:3.15.0rc1-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v3.4.7
 ARG UPSTREAM_GIT=https://github.com/threat9/routersploit.git
@@ -43,7 +43,7 @@ RUN python -m venv /opt/venv \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM python:3.14.6-alpine3.24 AS runtime
+FROM python:3.15.0rc1-alpine3.24 AS runtime
 
 ARG RELEASE_VERSION=v3.4.7
 
