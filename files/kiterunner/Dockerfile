@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 # build — compile a static kr binary
 # ---------------------------------------------------------------------------
-FROM golang:1.26.5-alpine3.24 AS build
+FROM golang:1.26.6-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v1.0.2
 ARG UPSTREAM_GIT=https://github.com/assetnote/kiterunner.git
