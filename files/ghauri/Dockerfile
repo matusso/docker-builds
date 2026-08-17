@@ -13,7 +13,7 @@
 # ---------------------------------------------------------------------------
 # build — clone the tagged release, install it into /opt/venv
 # ---------------------------------------------------------------------------
-FROM python:3.14.6-alpine3.24 AS build
+FROM python:3.14.7-alpine3.24 AS build
 
 ARG RELEASE_VERSION=1.4.3
 ARG UPSTREAM_GIT=https://github.com/r0oth3x49/ghauri.git
@@ -34,7 +34,7 @@ RUN python -m venv /opt/venv \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM python:3.14.6-alpine3.24 AS runtime
+FROM python:3.14.7-alpine3.24 AS runtime
 
 ARG RELEASE_VERSION=1.4.3
 
