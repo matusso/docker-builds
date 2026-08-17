@@ -13,7 +13,7 @@
 # ---------------------------------------------------------------------------
 # build — install the pinned PyPI release into /opt/venv
 # ---------------------------------------------------------------------------
-FROM python:3.14.6-alpine3.24 AS build
+FROM python:3.14.7-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v2026.7.29
 
@@ -42,7 +42,7 @@ RUN python -m venv /opt/venv \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM python:3.14.6-alpine3.24 AS runtime
+FROM python:3.14.7-alpine3.24 AS runtime
 
 ARG RELEASE_VERSION=v2026.7.29
 
