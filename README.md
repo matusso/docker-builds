@@ -4,7 +4,7 @@ Multi-architecture container images for security tooling, published to GitHub
 Container Registry.
 
 [![ci](https://github.com/matusso/docker-builds/actions/workflows/ci.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ci.yml)
-[![images](https://img.shields.io/badge/images-10-blue)](#image-catalog)
+[![images](https://img.shields.io/badge/images-11-blue)](#image-catalog)
 [![registry](https://img.shields.io/badge/registry-ghcr.io%2Fmatusso-blue)](https://github.com/matusso?tab=packages)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -41,6 +41,9 @@ docker run --rm -p 8080:8080 -v pb_data:/pb/pb_data ghcr.io/matusso/pocketbase:l
 # Analyse firmware in the current directory
 docker run --rm -v "$PWD:/work" ghcr.io/matusso/binwalk:latest /work/firmware.bin
 
+# Sweep a subnet for web ports (masscan scans from a raw socket, so it needs the host network)
+docker run --rm --network host ghcr.io/matusso/masscan:latest -p80,443 192.0.2.0/24 --rate 1000
+
 # MVT exposes two CLIs, so the image starts a shell
 docker run --rm -it ghcr.io/matusso/mvt:latest
 ```
@@ -58,6 +61,7 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 | `dirsearch` | `v0.4.4` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | upstream Dockerfile |
 | `ghauri` | `1.4.3` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | [`files/ghauri`](files/ghauri) |
 | `kiterunner` | `v1.0.2` | [assetnote/kiterunner](https://github.com/assetnote/kiterunner) | [`files/kiterunner`](files/kiterunner) |
+| `masscan` | `1.3.2` | [robertdavidgraham/masscan](https://github.com/robertdavidgraham/masscan) | [`files/masscan`](files/masscan) |
 | `metasploit-framework` | `6.5.0` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
 | `mvt` | `v2026.7.29` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
 | `pocketbase` | `v0.39.10` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | [`files/pocketbase`](files/pocketbase) |
@@ -72,6 +76,11 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
   data.
 - **`mvt`** installs two entrypoints, `mvt-ios` and `mvt-android`, so the image
   defaults to a shell rather than choosing one for you.
+- **`masscan`** scans from a raw socket. The binary carries the `cap_net_raw`
+  file capability, which Docker grants by default, so no extra flags are needed —
+  but it has to see a real network, so run it with `--network host`. Conversely
+  `--cap-drop=ALL` stops the image starting at all: a file capability the
+  container cannot grant makes `execve` fail.
 - **`routersploit`** starts the interactive `rsf.py` console; run it with `-it`.
 - **`raptor`** is a development-environment image, not a minimal runtime. It
   tracks upstream's default branch rather than a release, so it is tagged
@@ -257,11 +266,11 @@ here.
 **The published images** are a different matter. Each one contains a third-party
 tool under that tool's own license, and those terms travel with the image
 regardless of this repository's license. If you redistribute an image, you take
-on its upstream obligations — two of them are copyleft:
+on its upstream obligations — three of them are copyleft:
 
 | Image | Upstream license |
 | --- | --- |
-| `kiterunner` | AGPL-3.0-only |
+| `kiterunner`, `masscan` | AGPL-3.0-only |
 | `dirsearch` | GPL-2.0-or-later |
 | `mvt` | MVT License 1.1 — Mozilla-derived, **not** OSI-approved, and it restricts use |
 | `metasploit-framework`, `routersploit`, `wafw00f` | BSD-3-Clause |
