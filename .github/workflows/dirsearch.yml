@@ -31,7 +31,7 @@ jobs:
       attestations: write
     with:
       image: dirsearch
-      version: v0.4.4
+      version: v0.5.0
       context: upstream/dirsearch
       upstream-repo: maurosoria/dirsearch
       description: Web path and file brute-forcing utility

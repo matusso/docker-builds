@@ -33,7 +33,7 @@ jobs:
       attestations: write
     with:
       image: mvt
-      version: v2026.7.29
+      version: v2026.9.7
       context: files/mvt
       description: Mobile Verification Toolkit — forensic analysis of Android and iOS devices
       licenses: LicenseRef-MVT-1.1
@@ -54,6 +54,6 @@ jobs:
       project-key: docker-builds:mvt-project
       project-name: mvt-project
       upstream-repo: mvt-project/mvt
-      upstream-ref: v2026.7.29
+      upstream-ref: v2026.9.7
       python-version: "3.14"
     secrets: inherit

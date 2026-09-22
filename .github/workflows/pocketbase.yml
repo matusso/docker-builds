@@ -33,12 +33,12 @@ jobs:
       attestations: write
     with:
       image: pocketbase
-      version: v0.39.10
+      version: v0.40.4
       context: files/pocketbase
       description: Open source realtime backend in a single file
       licenses: MIT
       push: ${{ github.event_name != 'pull_request' }}
-      smoke-command: docker run --rm "$IMAGE" --version | grep -q '0.39.10'
+      smoke-command: docker run --rm "$IMAGE" --version | grep -q '0.40.4'
 
   sonar:
     name: Quality
@@ -50,5 +50,5 @@ jobs:
       project-key: docker-builds:pocketbase
       project-name: pocketbase
       upstream-repo: pocketbase/pocketbase
-      upstream-ref: v0.39.10
+      upstream-ref: v0.40.4
     secrets: inherit

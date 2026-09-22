@@ -24,7 +24,7 @@
 # ---------------------------------------------------------------------------
 # build — compile bin/masscan from the tagged release
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.1 AS build
+FROM alpine:3.24.2 AS build
 
 ARG RELEASE_VERSION=1.3.2
 ARG UPSTREAM_GIT=https://github.com/robertdavidgraham/masscan.git
@@ -45,7 +45,7 @@ RUN git clone --depth 1 --branch "${RELEASE_VERSION}" "${UPSTREAM_GIT}" . \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.1 AS runtime
+FROM alpine:3.24.2 AS runtime
 
 ARG RELEASE_VERSION=1.3.2
 
