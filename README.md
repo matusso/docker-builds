@@ -33,7 +33,7 @@ More examples:
 docker run --rm ghcr.io/matusso/wafw00f:v2.4.2 https://example.com
 
 # Brute-force web paths
-docker run --rm ghcr.io/matusso/dirsearch:v0.4.4 -u https://example.com
+docker run --rm ghcr.io/matusso/dirsearch:v0.5.0 -u https://example.com
 
 # Run PocketBase, persisting data to a named volume
 docker run --rm -p 8080:8080 -v pb_data:/pb/pb_data ghcr.io/matusso/pocketbase:latest
@@ -58,13 +58,13 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 | Image | Version | Upstream | Built from |
 | --- | --- | --- | --- |
 | `binwalk` | `v3.1.0` | [ReFirmLabs/binwalk](https://github.com/ReFirmLabs/binwalk) | upstream Dockerfile |
-| `dirsearch` | `v0.4.4` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | upstream Dockerfile |
+| `dirsearch` | `v0.5.0` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | upstream Dockerfile |
 | `ghauri` | `1.4.3` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | [`files/ghauri`](files/ghauri) |
 | `kiterunner` | `v1.0.2` | [assetnote/kiterunner](https://github.com/assetnote/kiterunner) | [`files/kiterunner`](files/kiterunner) |
 | `masscan` | `1.3.2` | [robertdavidgraham/masscan](https://github.com/robertdavidgraham/masscan) | [`files/masscan`](files/masscan) |
-| `metasploit-framework` | `6.5.0` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
-| `mvt` | `v2026.7.29` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
-| `pocketbase` | `v0.39.10` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | [`files/pocketbase`](files/pocketbase) |
+| `metasploit-framework` | `6.5.5` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
+| `mvt` | `v2026.9.7` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
+| `pocketbase` | `v0.40.4` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | [`files/pocketbase`](files/pocketbase) |
 | `raptor` | `sha-<commit>` | [gadievron/raptor](https://github.com/gadievron/raptor) | upstream devcontainer Dockerfile |
 | `routersploit` | `v3.4.7` | [threat9/routersploit](https://github.com/threat9/routersploit) | [`files/routersploit`](files/routersploit) |
 | `wafw00f` | `v2.4.2` | [EnableSecurity/wafw00f](https://github.com/EnableSecurity/wafw00f) | [`files/wafw00f`](files/wafw00f) |

@@ -7,14 +7,14 @@
 # target architecture is downloaded and verified against the release's
 # `checksums.txt` before being copied into a minimal runtime stage.
 #
-#   docker build --build-arg RELEASE_VERSION=v0.39.10 -t pocketbase files/pocketbase
+#   docker build --build-arg RELEASE_VERSION=v0.40.4 -t pocketbase files/pocketbase
 #
 # ---------------------------------------------------------------------------
 # fetch — download and checksum-verify the release archive
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.1 AS fetch
+FROM alpine:3.24.2 AS fetch
 
-ARG RELEASE_VERSION=v0.39.10
+ARG RELEASE_VERSION=v0.40.4
 # Provided automatically by BuildKit; do not override.
 ARG TARGETOS
 ARG TARGETARCH
@@ -42,9 +42,9 @@ RUN set -eux; \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.1 AS runtime
+FROM alpine:3.24.2 AS runtime
 
-ARG RELEASE_VERSION=v0.39.10
+ARG RELEASE_VERSION=v0.40.4
 
 LABEL org.opencontainers.image.title="pocketbase" \
       org.opencontainers.image.description="Open source realtime backend in a single file" \

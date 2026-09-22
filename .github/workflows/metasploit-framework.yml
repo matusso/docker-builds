@@ -31,7 +31,7 @@ jobs:
       attestations: write
     with:
       image: metasploit-framework
-      version: "6.5.0"
+      version: "6.5.5"
       context: upstream/metasploit-framework
       upstream-repo: rapid7/metasploit-framework
       description: Metasploit Framework — penetration testing framework
@@ -55,7 +55,7 @@ jobs:
       project-key: docker-builds:metasploit-framework
       project-name: metasploit-framework
       upstream-repo: rapid7/metasploit-framework
-      upstream-ref: "6.5.0"
+      upstream-ref: "6.5.5"
       extra-args: >-
         -Dsonar.languages=ruby
         -Dsonar.exclusions=**/*.java,**/*.c,**/*.cpp,**/*.h,**/*.mm,**/*.m

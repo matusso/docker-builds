@@ -42,7 +42,7 @@ RUN git clone --depth 1 --branch "${RELEASE_VERSION}" "${UPSTREAM_GIT}" . \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.1 AS runtime
+FROM alpine:3.24.2 AS runtime
 
 ARG RELEASE_VERSION=v1.0.2
 

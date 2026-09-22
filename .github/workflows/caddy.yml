@@ -31,8 +31,8 @@ env:
   APP_SLUG: caddy
   CADDY_VERSION: "v2.11.4"
   CADDY_MODULES: github.com/caddy-dns/cloudflare
-  XCADDY_VERSION: "v0.4.6"
-  GO_VERSION: "1.26.5"
+  XCADDY_VERSION: "v0.4.7"
+  GO_VERSION: "1.27.1"
 
 jobs:
   build:
