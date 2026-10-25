@@ -3,18 +3,20 @@
 # RouterSploit — exploitation framework for embedded devices.
 # Upstream: https://github.com/threat9/routersploit
 #
-# Two notes on the build:
+# Three notes on the build:
 #   * `telnetlib-313-and-up` restores the stdlib `telnetlib` module that Python
 #     3.13 removed (PEP 594) and that RouterSploit still imports.
 #   * Installation goes through `pip install .`; upstream's `setup.py install`
 #     path no longer works with setuptools >= 80.
+#   * RouterSploit imports `pkg_resources` at startup, which setuptools 81
+#     removed, so the venv keeps setuptools < 81.
 #
 #   docker build --build-arg RELEASE_VERSION=v3.4.7 -t routersploit files/routersploit
 #
 # ---------------------------------------------------------------------------
 # build — clone the tagged release, install it into /opt/venv
 # ---------------------------------------------------------------------------
-FROM python:3.14.8-alpine3.24 AS build
+FROM python:3.15.1-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v3.4.7
 ARG UPSTREAM_GIT=https://github.com/threat9/routersploit.git
@@ -35,7 +37,7 @@ RUN apk add --no-cache \
 
 RUN python -m venv /opt/venv \
     && git clone --depth 1 --branch "${RELEASE_VERSION}" "${UPSTREAM_GIT}" /src \
-    && pip install --upgrade pip setuptools wheel \
+    && pip install --upgrade pip "setuptools<81" wheel \
     && pip install "telnetlib-313-and-up==${TELNETLIB_SHIM_VERSION}" \
     && pip install /src \
     && rm -rf /src
@@ -43,7 +45,7 @@ RUN python -m venv /opt/venv \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM python:3.14.8-alpine3.24 AS runtime
+FROM python:3.15.1-alpine3.24 AS runtime
 
 ARG RELEASE_VERSION=v3.4.7
 

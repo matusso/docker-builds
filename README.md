@@ -62,9 +62,9 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 | `ghauri` | `1.4.3` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | [`files/ghauri`](files/ghauri) |
 | `kiterunner` | `v1.0.2` | [assetnote/kiterunner](https://github.com/assetnote/kiterunner) | [`files/kiterunner`](files/kiterunner) |
 | `masscan` | `1.3.2` | [robertdavidgraham/masscan](https://github.com/robertdavidgraham/masscan) | [`files/masscan`](files/masscan) |
-| `metasploit-framework` | `6.5.5` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
-| `mvt` | `v2026.9.7` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
-| `pocketbase` | `v0.40.4` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | [`files/pocketbase`](files/pocketbase) |
+| `metasploit-framework` | `6.5.8` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
+| `mvt` | `v2026.10.12` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
+| `pocketbase` | `v0.40.6` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | [`files/pocketbase`](files/pocketbase) |
 | `raptor` | `sha-<commit>` | [gadievron/raptor](https://github.com/gadievron/raptor) | upstream devcontainer Dockerfile |
 | `routersploit` | `v3.4.7` | [threat9/routersploit](https://github.com/threat9/routersploit) | [`files/routersploit`](files/routersploit) |
 | `wafw00f` | `v2.4.2` | [EnableSecurity/wafw00f](https://github.com/EnableSecurity/wafw00f) | [`files/wafw00f`](files/wafw00f) |
@@ -94,11 +94,11 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 ### Also published: a custom Caddy binary
 
 Not an image — a GitHub Release. [Caddy](https://github.com/caddyserver/caddy)
-`v2.11.4` built with `github.com/caddy-dns/cloudflare` compiled in, for
+`v2.11.7` built with `github.com/caddy-dns/cloudflare` compiled in, for
 `linux-amd64`, `linux-arm64` and `linux-armv7`.
 
 ```bash
-gh release download caddy-v2.11.4 --repo matusso/docker-builds --pattern '*linux-amd64*'
+gh release download caddy-v2.11.7 --repo matusso/docker-builds --pattern '*linux-amd64*'
 sha256sum -c SHA256SUMS --ignore-missing
 ```
 

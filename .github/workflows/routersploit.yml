@@ -42,7 +42,7 @@ jobs:
       # imports instead — including the telnetlib shim that Python 3.13 removed.
       smoke-command: >-
         docker run --rm --entrypoint python "$IMAGE"
-        -c 'import routersploit, telnetlib; print(routersploit.__file__)'
+        -c 'import routersploit.interpreter, telnetlib; print(routersploit.__file__)'
 
   sonar:
     name: Quality
@@ -55,5 +55,5 @@ jobs:
       project-name: routersploit
       upstream-repo: threat9/routersploit
       upstream-ref: v3.4.7
-      python-version: "3.14"
+      python-version: "3.15"
     secrets: inherit
