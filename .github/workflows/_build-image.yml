@@ -127,6 +127,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  # Fallback chain: Trivy tries each mirror in order, so a rate limit on one
+  # (e.g. ECR's anonymous TOOMANYREQUESTS data cap) no longer fails the scan.
+  TRIVY_DB_REPOSITORY: mirror.gcr.io/aquasec/trivy-db:2,public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -440,8 +443,6 @@ jobs:
           severity: ${{ inputs.scan-severity }}
           ignore-unfixed: true
           vuln-type: os,library
-        env:
-          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
 
       - name: Upload SARIF to code scanning
         uses: github/codeql-action/upload-sarif@v4
@@ -458,5 +459,8 @@ jobs:
           severity: ${{ inputs.scan-fail-on }}
           ignore-unfixed: true
           exit-code: '1'
+          # Reuse the Trivy binary and DB the previous step already fetched.
+          skip-setup-trivy: true
         env:
-          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_SKIP_DB_UPDATE: 'true'
+          TRIVY_SKIP_JAVA_DB_UPDATE: 'true'
