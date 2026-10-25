@@ -4,7 +4,7 @@ Two distinct claims are checked. First, that this repository carries the licence
 it says it does. Second, and more importantly, that every published image
 declares the upstream licence it actually ships — an image whose
 ``org.opencontainers.image.licenses`` label is missing or wrong is a compliance
-problem for whoever redistributes it, and three of these images are copyleft.
+problem for whoever redistributes it, and four of these images are copyleft.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ COPYLEFT = {
     "kiterunner": "AGPL-3.0",
     "masscan": "AGPL-3.0",
     "dirsearch": "GPL-2.0",
+    "commix": "GPL-3.0",
 }
 
 IMAGES = sorted(catalog.image_specs())

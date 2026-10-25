@@ -4,7 +4,7 @@ Multi-architecture container images for security tooling, published to GitHub
 Container Registry.
 
 [![ci](https://github.com/matusso/docker-builds/actions/workflows/ci.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ci.yml)
-[![images](https://img.shields.io/badge/images-11-blue)](#image-catalog)
+[![images](https://img.shields.io/badge/images-12-blue)](#image-catalog)
 [![registry](https://img.shields.io/badge/registry-ghcr.io%2Fmatusso-blue)](https://github.com/matusso?tab=packages)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -58,6 +58,7 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 | Image | Version | Upstream | Built from |
 | --- | --- | --- | --- |
 | `binwalk` | `v3.1.0` | [ReFirmLabs/binwalk](https://github.com/ReFirmLabs/binwalk) | upstream Dockerfile |
+| `commix` | `v4.1` | [commixproject/commix](https://github.com/commixproject/commix) | [`files/commix`](files/commix) |
 | `dirsearch` | `v0.5.0` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | upstream Dockerfile |
 | `ghauri` | `1.4.3` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | [`files/ghauri`](files/ghauri) |
 | `kiterunner` | `v1.0.2` | [assetnote/kiterunner](https://github.com/assetnote/kiterunner) | [`files/kiterunner`](files/kiterunner) |
@@ -82,6 +83,9 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
   `--cap-drop=ALL` stops the image starting at all: a file capability the
   container cannot grant makes `execve` fail.
 - **`routersploit`** starts the interactive `rsf.py` console; run it with `-it`.
+- **`commix`** reads a target list from stdin whenever stdin is not a terminal,
+  which silently overrides `-u`. Always run it with `-t` (or `-it` to answer
+  prompts). Results land in `/work/.output`.
 - **`raptor`** is a development-environment image, not a minimal runtime. It
   tracks upstream's default branch rather than a release, so it is tagged
   `sha-<commit>` plus `latest`. On `arm64` the bundled CodeQL CLI is replaced by
@@ -266,11 +270,12 @@ here.
 **The published images** are a different matter. Each one contains a third-party
 tool under that tool's own license, and those terms travel with the image
 regardless of this repository's license. If you redistribute an image, you take
-on its upstream obligations — three of them are copyleft:
+on its upstream obligations — four of them are copyleft:
 
 | Image | Upstream license |
 | --- | --- |
 | `kiterunner`, `masscan` | AGPL-3.0-only |
+| `commix` | GPL-3.0-or-later |
 | `dirsearch` | GPL-2.0-or-later |
 | `mvt` | MVT License 1.1 — Mozilla-derived, **not** OSI-approved, and it restricts use |
 | `metasploit-framework`, `routersploit`, `wafw00f` | BSD-3-Clause |
