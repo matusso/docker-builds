@@ -34,8 +34,10 @@ from pathlib import Path
 
 # --- patch definitions -----------------------------------------------------
 
+# The ``ARG CODEQL_VERSION=...`` line above this block is deliberately not part
+# of the match: upstream bumps it automatically, and the guard does not care
+# which version is downloaded.
 CODEQL_FIND = """\
-ARG CODEQL_VERSION=2.15.5
 RUN mkdir -p /opt/codeql \\
     && curl -L "https://github.com/github/codeql-cli-binaries/releases/download/v${CODEQL_VERSION}/codeql-linux64.zip" -o /tmp/codeql.zip \\
     && unzip /tmp/codeql.zip -d /opt \\
@@ -43,7 +45,6 @@ RUN mkdir -p /opt/codeql \\
     && ln -s /opt/codeql/codeql /usr/local/bin/codeql"""
 
 CODEQL_REPLACE = """\
-ARG CODEQL_VERSION=2.15.5
 ARG TARGETARCH
 RUN mkdir -p /opt/codeql \\
     && if [ "$TARGETARCH" = "amd64" ]; then \\
