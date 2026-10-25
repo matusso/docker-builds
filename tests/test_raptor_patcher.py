@@ -84,6 +84,19 @@ def test_optional_patch_missing_is_tolerated(dockerfile: Path) -> None:
     assert "python:3.13-trixie" in dockerfile.read_text(encoding="utf-8")
 
 
+def test_codeql_version_bump_does_not_break_the_guard(dockerfile: Path) -> None:
+    """Upstream bumps CODEQL_VERSION on its own; the guard must keep applying."""
+    text = dockerfile.read_text(encoding="utf-8").replace(
+        "ARG CODEQL_VERSION=2.15.5", "ARG CODEQL_VERSION=2.27.2"
+    )
+    dockerfile.write_text(text, encoding="utf-8")
+
+    assert patcher.main([str(dockerfile)]) == 0
+    patched = dockerfile.read_text(encoding="utf-8")
+    assert "ARG CODEQL_VERSION=2.27.2\nARG TARGETARCH\n" in patched
+    assert 'if [ "$TARGETARCH" = "amd64" ]' in patched
+
+
 def test_required_patch_missing_fails_loudly(dockerfile: Path) -> None:
     """If the CodeQL block disappears, arm64 correctness is no longer assured."""
     text = dockerfile.read_text(encoding="utf-8").replace(patcher.CODEQL_FIND, "RUN echo rewritten")
