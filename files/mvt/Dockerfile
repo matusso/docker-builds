@@ -8,14 +8,14 @@
 # a clean runtime stage. MVT exposes two console entrypoints (`mvt-ios` and
 # `mvt-android`), so the image defaults to a shell rather than forcing one.
 #
-#   docker build --build-arg RELEASE_VERSION=v2026.9.7 -t mvt files/mvt
+#   docker build --build-arg RELEASE_VERSION=v2026.10.12 -t mvt files/mvt
 #
 # ---------------------------------------------------------------------------
 # build — install the pinned PyPI release into /opt/venv
 # ---------------------------------------------------------------------------
-FROM python:3.14.8-alpine3.24 AS build
+FROM python:3.15.1-alpine3.24 AS build
 
-ARG RELEASE_VERSION=v2026.9.7
+ARG RELEASE_VERSION=v2026.10.12
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -42,9 +42,9 @@ RUN python -m venv /opt/venv \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM python:3.14.8-alpine3.24 AS runtime
+FROM python:3.15.1-alpine3.24 AS runtime
 
-ARG RELEASE_VERSION=v2026.9.7
+ARG RELEASE_VERSION=v2026.10.12
 
 LABEL org.opencontainers.image.title="mvt" \
       org.opencontainers.image.description="Mobile Verification Toolkit — forensic analysis of Android and iOS devices" \

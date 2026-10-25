@@ -51,5 +51,5 @@ jobs:
       project-name: ghauri
       upstream-repo: r0oth3x49/ghauri
       upstream-ref: "1.4.3"
-      python-version: "3.14"
+      python-version: "3.15"
     secrets: inherit

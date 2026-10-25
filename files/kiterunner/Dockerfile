@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 # build — compile a static kr binary
 # ---------------------------------------------------------------------------
-FROM golang:1.27.2-alpine3.24 AS build
+FROM golang:1.27.3-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v1.0.2
 ARG UPSTREAM_GIT=https://github.com/assetnote/kiterunner.git
@@ -42,7 +42,7 @@ RUN git clone --depth 1 --branch "${RELEASE_VERSION}" "${UPSTREAM_GIT}" . \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.2 AS runtime
+FROM alpine:3.24.3 AS runtime
 
 ARG RELEASE_VERSION=v1.0.2
 
