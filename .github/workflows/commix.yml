@@ -1,0 +1,60 @@
+# commix — automated OS command injection detection and exploitation tool.
+# Upstream: https://github.com/commixproject/commix
+---
+name: commix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/commix.yml
+      - .github/workflows/_build-image.yml
+      - files/commix/**
+  pull_request:
+    paths:
+      - .github/workflows/commix.yml
+      - .github/workflows/_build-image.yml
+      - files/commix/**
+  workflow_dispatch:
+
+concurrency:
+  group: commix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: Image
+    uses: ./.github/workflows/_build-image.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+      id-token: write
+      attestations: write
+    with:
+      image: commix
+      version: v4.1
+      context: files/commix
+      description: Automated OS command injection detection and exploitation tool
+      licenses: GPL-3.0-or-later
+      push: ${{ github.event_name != 'pull_request' }}
+      # A full run against a closed port, not just --help: commix does its work at
+      # import time, so --help passes even when the launcher itself is broken.
+      smoke-command: >-
+        out=$(docker run --rm "$IMAGE" --batch -u 'http://127.0.0.1:9/?id=1' 2>&1 </dev/null)
+        && grep -q 'Legal disclaimer' <<<"$out"
+        && ! grep -q Traceback <<<"$out"
+
+  sonar:
+    name: Quality
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/_sonar-scan.yml
+    permissions:
+      contents: read
+    with:
+      project-key: docker-builds:commix
+      project-name: commix
+      upstream-repo: commixproject/commix
+      upstream-ref: v4.1
+      python-version: "3.15"
+    secrets: inherit
