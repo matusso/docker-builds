@@ -19,7 +19,7 @@
 # ---------------------------------------------------------------------------
 # build — clone the tagged release into /opt/commix
 # ---------------------------------------------------------------------------
-FROM python:3.15.1-alpine3.24 AS build
+FROM python:3.16.0a1-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v4.1
 ARG UPSTREAM_GIT=https://github.com/commixproject/commix.git
@@ -32,7 +32,7 @@ RUN git clone --depth 1 --branch "${RELEASE_VERSION}" "${UPSTREAM_GIT}" /opt/com
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM python:3.15.1-alpine3.24 AS runtime
+FROM python:3.16.0a1-alpine3.24 AS runtime
 
 ARG RELEASE_VERSION=v4.1
 
