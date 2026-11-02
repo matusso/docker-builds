@@ -4,7 +4,7 @@ Multi-architecture container images for security tooling, published to GitHub
 Container Registry.
 
 [![ci](https://github.com/matusso/docker-builds/actions/workflows/ci.yml/badge.svg)](https://github.com/matusso/docker-builds/actions/workflows/ci.yml)
-[![images](https://img.shields.io/badge/images-12-blue)](#image-catalog)
+[![images](https://img.shields.io/badge/images-13-blue)](#image-catalog)
 [![registry](https://img.shields.io/badge/registry-ghcr.io%2Fmatusso-blue)](https://github.com/matusso?tab=packages)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -58,6 +58,7 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 | Image | Version | Upstream | Built from |
 | --- | --- | --- | --- |
 | `binwalk` | `v3.1.0` | [ReFirmLabs/binwalk](https://github.com/ReFirmLabs/binwalk) | upstream Dockerfile |
+| `caddy` | `v2.11.7` | [caddyserver/caddy](https://github.com/caddyserver/caddy) | [`files/caddy`](files/caddy) |
 | `commix` | `v4.1` | [commixproject/commix](https://github.com/commixproject/commix) | [`files/commix`](files/commix) |
 | `dirsearch` | `v0.5.0` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | upstream Dockerfile |
 | `ghauri` | `1.4.3` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | [`files/ghauri`](files/ghauri) |
@@ -75,6 +76,12 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 - **`pocketbase`** listens on `8080`, stores data in `/pb/pb_data`, and defines a
   `HEALTHCHECK` against `/api/health`. Mount a volume at `/pb/pb_data` to persist
   data.
+- **`caddy`** is Caddy with the `github.com/caddy-dns/cloudflare` DNS module
+  compiled in, laid out like the official image (`/etc/caddy/Caddyfile`, `/data`,
+  `/config`, `/srv`) but running as uid `10001`. Persist `/data`, or certificates
+  are re-issued on every start. Binding `80`/`443` relies on the
+  `cap_net_bind_service` file capability, so — as with `masscan` —
+  `--cap-drop=ALL` stops it starting; add `--cap-add=NET_BIND_SERVICE` back.
 - **`mvt`** installs two entrypoints, `mvt-ios` and `mvt-android`, so the image
   defaults to a shell rather than choosing one for you.
 - **`masscan`** scans from a raw socket. The binary carries the `cap_net_raw`
@@ -95,9 +102,10 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
   matching host user and expects a database. Follow
   [upstream's Docker instructions](https://github.com/rapid7/metasploit-framework/tree/master/docker).
 
-### Also published: a custom Caddy binary
+### Also published: custom Caddy binaries
 
-Not an image — a GitHub Release. [Caddy](https://github.com/caddyserver/caddy)
+Besides the `caddy` image, the same build is attached to a GitHub Release.
+[Caddy](https://github.com/caddyserver/caddy)
 `v2.11.7` built with `github.com/caddy-dns/cloudflare` compiled in, for
 `linux-amd64`, `linux-arm64` and `linux-armv7`.
 
@@ -280,7 +288,7 @@ on its upstream obligations — four of them are copyleft:
 | `mvt` | MVT License 1.1 — Mozilla-derived, **not** OSI-approved, and it restricts use |
 | `metasploit-framework`, `routersploit`, `wafw00f` | BSD-3-Clause |
 | `binwalk`, `ghauri`, `pocketbase`, `raptor` | MIT |
-| `caddy` (binary release) | Apache-2.0 |
+| `caddy` (image and binary release) | Apache-2.0 |
 
 One extra caveat for `raptor`: on `linux/amd64` the image bundles GitHub's
 **CodeQL CLI**, which is not covered by RAPTOR's MIT licence and is distributed

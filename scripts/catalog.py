@@ -29,7 +29,7 @@ FILES_DIR = REPO_ROOT / "files"
 README = REPO_ROOT / "README.md"
 
 #: Workflows that do not publish an image through the shared pipeline.
-NON_IMAGE_WORKFLOWS = frozenset({"ci.yml", "caddy.yml"})
+NON_IMAGE_WORKFLOWS = frozenset({"ci.yml"})
 
 #: Images that track a branch rather than a release. The workflow's version is a
 #: runtime expression, so the catalog documents the tag shape instead.
@@ -260,6 +260,18 @@ def collect_problems() -> list[Problem]:
     elif pinned != documented:
         found.append(
             Problem("caddy", f"caddy.yml pins `{pinned}` but the README says `{documented}`.")
+        )
+
+    # caddy.yml publishes the binary release and the image from separate pins,
+    # because a reusable-workflow call cannot read the workflow's `env`.
+    image = specs.get("caddy")
+    if pinned is not None and image is not None and image.version != pinned:
+        found.append(
+            Problem(
+                "caddy",
+                f"caddy.yml releases binaries for `{pinned}` but builds the image "
+                f"for `{image.version}`.",
+            )
         )
 
     return found
