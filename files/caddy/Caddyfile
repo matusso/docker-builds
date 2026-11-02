@@ -1,0 +1,5 @@
+# Default configuration: answer on :80 so a bare `docker run` shows the server
+# is up. Replace it by mounting your own file over /etc/caddy/Caddyfile.
+:80 {
+	respond "Caddy is running" 200
+}
