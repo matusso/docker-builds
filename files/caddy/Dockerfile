@@ -23,9 +23,8 @@ ARG CADDY_MODULES=github.com/caddy-dns/cloudflare
 ENV CGO_ENABLED=0 \
     XCADDY_GO_BUILD_FLAGS="-ldflags '-w -s' -trimpath"
 
-RUN apk add --no-cache git libcap-setcap
-
-RUN go install "github.com/caddyserver/xcaddy/cmd/xcaddy@${XCADDY_VERSION}"
+RUN apk add --no-cache git libcap-setcap \
+    && go install "github.com/caddyserver/xcaddy/cmd/xcaddy@${XCADDY_VERSION}"
 
 WORKDIR /src
 
@@ -35,7 +34,9 @@ RUN set -eux; \
     for module in ${CADDY_MODULES}; do with="${with} --with ${module}"; done; \
     xcaddy build "${RELEASE_VERSION}" --output /out/caddy ${with}; \
     /out/caddy version; \
-    /out/caddy list-modules | grep -q '^dns.providers.cloudflare$'; \
+    # No pipe: under `set -e` a failing list-modules would be masked by grep.
+    /out/caddy list-modules > /tmp/modules; \
+    grep -qx 'dns.providers.cloudflare' /tmp/modules; \
     # Grant the capability here: doing it in the runtime stage rewrites the
     # binary into a second layer. COPY --from preserves the xattr.
     setcap cap_net_bind_service=+ep /out/caddy
