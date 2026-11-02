@@ -37,7 +37,7 @@ env:
 jobs:
   build:
     name: Build ${{ matrix.osarch }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -105,7 +105,7 @@ jobs:
     name: Publish release
     needs: build
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     permissions:
       contents: write

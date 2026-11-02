@@ -1,9 +1,10 @@
 # actionlint configuration.
 ---
 self-hosted-runner:
-  # GitHub-hosted arm64 runners. Older actionlint releases do not carry these in
-  # their built-in label list.
+  # GitHub-hosted runners (ubuntu-26.04, arm64) that older actionlint releases
+  # do not carry in their built-in label list.
   labels:
+    - ubuntu-26.04
     - ubuntu-24.04-arm
     - ubuntu-22.04-arm
 
