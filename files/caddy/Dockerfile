@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 # build — compile caddy with xcaddy
 # ---------------------------------------------------------------------------
-FROM golang:1.27.3-alpine3.24 AS build
+FROM golang:1.27.4-alpine3.24 AS build
 
 ARG RELEASE_VERSION=v2.11.7
 ARG XCADDY_VERSION=v0.4.7
