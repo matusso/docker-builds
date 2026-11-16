@@ -12,7 +12,7 @@
 # ---------------------------------------------------------------------------
 # fetch — download and checksum-verify the release archive
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.3 AS fetch
+FROM alpine:3.24.4 AS fetch
 
 ARG RELEASE_VERSION=v0.40.6
 # Provided automatically by BuildKit; do not override.
@@ -42,7 +42,7 @@ RUN set -eux; \
 # ---------------------------------------------------------------------------
 # runtime
 # ---------------------------------------------------------------------------
-FROM alpine:3.24.3 AS runtime
+FROM alpine:3.24.4 AS runtime
 
 ARG RELEASE_VERSION=v0.40.6
 
