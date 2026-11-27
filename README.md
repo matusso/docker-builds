@@ -58,14 +58,14 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 | Image | Version | Upstream | Built from |
 | --- | --- | --- | --- |
 | `binwalk` | `v3.1.0` | [ReFirmLabs/binwalk](https://github.com/ReFirmLabs/binwalk) | upstream Dockerfile |
-| `caddy` | `v2.11.7` | [caddyserver/caddy](https://github.com/caddyserver/caddy) | [`files/caddy`](files/caddy) |
+| `caddy` | `v2.11.9` | [caddyserver/caddy](https://github.com/caddyserver/caddy) | [`files/caddy`](files/caddy) |
 | `commix` | `v4.1` | [commixproject/commix](https://github.com/commixproject/commix) | [`files/commix`](files/commix) |
 | `dirsearch` | `v0.5.0` | [maurosoria/dirsearch](https://github.com/maurosoria/dirsearch) | upstream Dockerfile |
 | `ghauri` | `1.4.3` | [r0oth3x49/ghauri](https://github.com/r0oth3x49/ghauri) | [`files/ghauri`](files/ghauri) |
 | `kiterunner` | `v1.0.2` | [assetnote/kiterunner](https://github.com/assetnote/kiterunner) | [`files/kiterunner`](files/kiterunner) |
 | `masscan` | `1.3.2` | [robertdavidgraham/masscan](https://github.com/robertdavidgraham/masscan) | [`files/masscan`](files/masscan) |
-| `metasploit-framework` | `6.5.8` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
-| `mvt` | `v2026.10.12` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
+| `metasploit-framework` | `6.5.13` | [rapid7/metasploit-framework](https://github.com/rapid7/metasploit-framework) | upstream Dockerfile |
+| `mvt` | `v2026.11.23` | [mvt-project/mvt](https://github.com/mvt-project/mvt) | [`files/mvt`](files/mvt) |
 | `pocketbase` | `v0.40.6` | [pocketbase/pocketbase](https://github.com/pocketbase/pocketbase) | [`files/pocketbase`](files/pocketbase) |
 | `raptor` | `sha-<commit>` | [gadievron/raptor](https://github.com/gadievron/raptor) | upstream devcontainer Dockerfile |
 | `routersploit` | `v3.4.7` | [threat9/routersploit](https://github.com/threat9/routersploit) | [`files/routersploit`](files/routersploit) |
@@ -106,11 +106,11 @@ All images are published as `ghcr.io/matusso/<image>` for `linux/amd64` and
 
 Besides the `caddy` image, the same build is attached to a GitHub Release.
 [Caddy](https://github.com/caddyserver/caddy)
-`v2.11.7` built with `github.com/caddy-dns/cloudflare` compiled in, for
+`v2.11.9` built with `github.com/caddy-dns/cloudflare` compiled in, for
 `linux-amd64`, `linux-arm64` and `linux-armv7`.
 
 ```bash
-gh release download caddy-v2.11.7 --repo matusso/docker-builds --pattern '*linux-amd64*'
+gh release download caddy-v2.11.9 --repo matusso/docker-builds --pattern '*linux-amd64*'
 sha256sum -c SHA256SUMS --ignore-missing
 ```
 

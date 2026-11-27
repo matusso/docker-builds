@@ -9,14 +9,14 @@
 # of the official `caddy` image (/etc/caddy, /config, /data, /srv), so it is a
 # drop-in replacement — except that it runs as an unprivileged user.
 #
-#   docker build --build-arg RELEASE_VERSION=v2.11.7 -t caddy files/caddy
+#   docker build --build-arg RELEASE_VERSION=v2.11.9 -t caddy files/caddy
 #
 # ---------------------------------------------------------------------------
 # build — compile caddy with xcaddy
 # ---------------------------------------------------------------------------
 FROM golang:1.27.4-alpine3.24 AS build
 
-ARG RELEASE_VERSION=v2.11.7
+ARG RELEASE_VERSION=v2.11.9
 ARG XCADDY_VERSION=v0.4.7
 ARG CADDY_MODULES=github.com/caddy-dns/cloudflare
 
@@ -46,7 +46,7 @@ RUN set -eux; \
 # ---------------------------------------------------------------------------
 FROM alpine:3.24.4 AS runtime
 
-ARG RELEASE_VERSION=v2.11.7
+ARG RELEASE_VERSION=v2.11.9
 
 LABEL org.opencontainers.image.title="caddy" \
       org.opencontainers.image.description="Caddy web server with the Cloudflare DNS module" \
