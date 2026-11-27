@@ -39,10 +39,10 @@ concurrency:
 
 env:
   APP_SLUG: caddy
-  CADDY_VERSION: "v2.11.7"
+  CADDY_VERSION: "v2.11.9"
   CADDY_MODULES: github.com/caddy-dns/cloudflare
   XCADDY_VERSION: "v0.4.7"
-  GO_VERSION: "1.27.3"
+  GO_VERSION: "1.27.4"
 
 jobs:
   image:
@@ -56,7 +56,7 @@ jobs:
       attestations: write
     with:
       image: caddy
-      version: v2.11.7
+      version: v2.11.9
       context: files/caddy
       description: Caddy web server with the Cloudflare DNS module
       licenses: Apache-2.0

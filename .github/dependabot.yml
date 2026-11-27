@@ -31,3 +31,8 @@ updates:
     commit-message:
       prefix: "build"
       include: scope
+    # Keep published images on stable CPython: Dependabot otherwise proposes
+    # pre-release tags such as 3.16.0a2-alpine3.24.
+    ignore:
+      - dependency-name: python
+        versions: [">= 3.16.0a0, < 3.16.0"]
